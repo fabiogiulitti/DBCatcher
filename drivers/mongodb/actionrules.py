@@ -1,7 +1,8 @@
-from treepath import TreePath,Node, make_session_id, references
+from core.treepath import TreePath,Node, make_session_id, references
+from core.itemaction import actions,ItemAction
 from pymongo import MongoClient
-
-#connectionUri = "mongodb://localhost:27017"
+from pymongo.collection import Collection
+from json import dumps
 
 @TreePath(node_type_in='connections', node_type_out='databases')
 def retrieveDatabases(ctx: dict):
@@ -20,8 +21,21 @@ def retrieveCollectionsHolding(ctx: dict):
 def retrieveCollections(ctx: dict):
     id = ctx['sessionID']
     client = references[id]['client']
-    print(ctx)
+    dbName = ctx['path'][0]
     db = client[ctx['path'][0]]
+    references[id][dbName] = db
     collections = db.list_collection_names()
-    print(collections)
     return (collections,id)
+
+@ItemAction(node_type_in='collections', action_type='clicked')
+def retrieveDocuments(ctx: dict):
+    id = ctx['sessionID']
+    dbName = ctx['path'][0]
+    colName = ctx['path'][2]
+    db = references[id][dbName]
+    col: Collection = db[colName]
+    docs = []
+    for doc in col.find():
+        docs.append(doc)
+    result = dumps(docs, default=str, indent=4)
+    return result

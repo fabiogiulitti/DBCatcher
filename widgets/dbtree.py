@@ -1,11 +1,11 @@
 from PyQt6.QtWidgets import QTreeView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt, QModelIndex
-from treepath import Node
+from core.treepath import Node
 from configyaml import config as conf
 from widgets.utils import createItem
 from widgets.dbcontent import DbContent
-from manager import getNav
+from core.manager import getNav,getAction
 
 class DbTree(QTreeView):
 
@@ -46,9 +46,12 @@ class DbTree(QTreeView):
     
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
-            self.content.refreshText("testo di prova")
+            index = self.currentIndex()
+            data = index.model().itemData(index)
+            text = getAction(data[257])
+            self.content.refreshText(text)
+            self.content.setVisible(True)
         super().keyPressEvent(event)
-        
         
 
     def on_item_expanded(self, index: QModelIndex):
