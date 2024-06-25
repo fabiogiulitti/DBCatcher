@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QTextEdit
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
-class DiveContent(QTextEdit):
+class DbContent(QTextEdit):
     def __init__(self,parent):
         super().__init__(parent)
         self.setReadOnly(True)

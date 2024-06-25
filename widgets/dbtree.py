@@ -3,11 +3,11 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt
 import divemongo
 from configyaml import config as conf
-from widgets.divecontent import DiveContent
+from widgets.dbcontent import DbContent
 
-class DiveTree(QTreeView):
+class DbTree(QTreeView):
 
-    content: DiveContent
+    content: DbContent
 
     def __init__(self, parent: QWidget | None = ...) -> None:
         super().__init__(parent)
