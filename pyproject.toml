@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "divedb"
+version = "0.1.0"
+description = ""
+authors = ["Fabio <fabio@stsk.it>"]
+license = "GPL3"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyspark = "^3.5.1"
+pandas = "^2.2.2"
+pymongo = "^4.7.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
