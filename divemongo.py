@@ -1,5 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QTreeView, QWidget
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt6.QtGui import QStandardItem
 from pymongo import MongoClient
 
 

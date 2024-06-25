@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QHBoxLayout
 from widgets.dbcontent import DbContent
 import widgets.dbtree as dbtree
 

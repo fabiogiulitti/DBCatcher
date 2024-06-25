@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QTreeView, QWidget
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt
+from PyQt6.QtWidgets import QTreeView, QWidget
+from PyQt6.QtGui import QStandardItemModel, QStandardItem
+from PyQt6.QtCore import Qt
 import divemongo
 from configyaml import config as conf
 from widgets.dbcontent import DbContent
@@ -40,6 +40,6 @@ class DbTree(QTreeView):
         super().mousePressEvent(event)
     
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
             self.content.refreshText("testo di prova")
         super().keyPressEvent(event)

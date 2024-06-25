@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QTextEdit
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt6.QtWidgets import QTextEdit
+from PyQt6.QtGui import QStandardItemModel, QStandardItem
 
 class DbContent(QTextEdit):
     def __init__(self,parent):

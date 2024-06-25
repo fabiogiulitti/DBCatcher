@@ -11,6 +11,7 @@ python = "^3.12"
 pyspark = "^3.5.1"
 pymongo = "^4.7.2"
 pyyml = "^0.0.2"
+pyqt6 = "^6.7.0"
 
 
 [build-system]
