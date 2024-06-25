@@ -3,8 +3,8 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from pymongo import MongoClient
 
 
-def create_mongo_model():
-    client = MongoClient('mongodb://localhost:27017/')  # Modifica l'URI se necessario
+def create_mongo_model(connectionUri):
+    client = MongoClient(connectionUri)
     databases = client.list_database_names()
 
     db_items = list()
