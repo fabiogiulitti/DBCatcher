@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QApplication, QTreeView, QWidget
+from PyQt5.QtWidgets import QTreeView, QWidget
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import divemongo
-from config import config
+from configyaml import config as conf
 
 class DiveTree(QTreeView):
     def __init__(self, parent: QWidget | None = ...) -> None:
@@ -12,13 +12,17 @@ class DiveTree(QTreeView):
     def createBaseModel(self):
         model = QStandardItemModel()
         model.setHorizontalHeaderLabels(['Connections'])
-        model.appendRow(self.getConnections())
+        rootItem = model.invisibleRootItem()
+        rootItem.appendRows(self.getConnections())
         return model
 
     def getConnections(self):
-        name = config['mongodb']['name']
-        type = config['mongodb']['type']
-        mongoItem = QStandardItem(f"{name} {type}")
-        for item in divemongo.create_mongo_model(config['mongodb']['connectionUri']):
-            mongoItem.appendRow(item)
-        return mongoItem
+        connectionItems = list()
+
+        for connection in conf.get_value("connections"):
+            name = connection['name']
+            type = connection['type']
+            mongoItem = QStandardItem(f"{name} {type}")
+            mongoItem.appendRows(divemongo.create_mongo_model(connection['connectionUri']))
+            connectionItems.append(mongoItem)
+        return connectionItems
