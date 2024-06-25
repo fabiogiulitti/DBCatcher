@@ -1,8 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout
 from widgets.divecontent import DiveContent
-
-import divetree
+import widgets.divetree as divetree
 import divemongo
 
 class DiveWindow(QWidget):
