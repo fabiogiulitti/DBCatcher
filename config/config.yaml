@@ -2,8 +2,8 @@
 connections:
 - name: localhost
   type: MongoDB
-  connectionUri: mongodb://localhost:27017/
+  connectionURI: mongodb://localhost:27017/
 - name: newconnection
   type: MongoDB
-  connectionUri: mongodb://localhost:27017/
+  connectionURI: mongodb://localhost:27017/
     
