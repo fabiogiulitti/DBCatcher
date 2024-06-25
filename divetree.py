@@ -1,9 +1,14 @@
 from PyQt5.QtWidgets import QTreeView, QWidget
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtCore import Qt
 import divemongo
 from configyaml import config as conf
+from widgets.divecontent import DiveContent
 
 class DiveTree(QTreeView):
+
+    content: DiveContent
+
     def __init__(self, parent: QWidget | None = ...) -> None:
         super().__init__(parent)
         self.setModel(self.createBaseModel())
@@ -26,3 +31,15 @@ class DiveTree(QTreeView):
             mongoItem.appendRows(divemongo.create_mongo_model(connection['connectionUri']))
             connectionItems.append(mongoItem)
         return connectionItems
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.content.refreshText("testo di prova")
+            event = None
+            print("chiamato")
+        super().mousePressEvent(event)
+    
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+            self.content.refreshText("testo di prova")
+        super().keyPressEvent(event)
