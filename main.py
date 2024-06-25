@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout
 
 import divetree
+import divemongo
 
 class DiveWindow(QWidget):
     def __init__(self):
@@ -10,16 +11,10 @@ class DiveWindow(QWidget):
         mylayout = QHBoxLayout()
         self.setGeometry(100, 100, 300, 200)
         fTree = divetree.DiveTree(self)
-        sTree = divetree.DiveTree(self)
-        sTree.addChild("Child2")
         mylayout.addWidget(fTree)
-        mylayout.addWidget(sTree)
-        self.setTabOrder(fTree, sTree)
-        self.setTabOrder(sTree, fTree)
+        #self.setTabOrder(fTree, sTree)
+        #self.setTabOrder(sTree, fTree)
         self.setLayout(mylayout)
-        
-    def addChild(self, name):
-        self.addChild(chil)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
