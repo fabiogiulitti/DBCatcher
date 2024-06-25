@@ -1,8 +1,9 @@
-from core.treepath import TreePath,Node, make_session_id, references
-from core.itemaction import actions,ItemAction
+from core.treepath import TreePath,make_session_id, references
+from core.itemaction import ItemAction
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from json import dumps
+from widgets.ContentData import ContentData
 
 @TreePath(node_type_in='connections', node_type_out='databases')
 def retrieveDatabases(ctx: dict):
@@ -28,14 +29,26 @@ def retrieveCollections(ctx: dict):
     return (collections,id)
 
 @ItemAction(node_type_in='collections', action_type='clicked')
-def retrieveDocuments(ctx: dict):
+def retrieveFirstDocuments(ctx: dict):
+    return getDocuments(ctx)
+
+def getDocuments(ctx: dict, curPage: int = 0, dimPage: int = 25):
     id = ctx['sessionID']
     dbName = ctx['path'][0]
     colName = ctx['path'][2]
     db = references[id][dbName]
     col: Collection = db[colName]
+
+    numDocs = col.count()
+    skip = curPage * dimPage
+    lastPage = numDocs / dimPage - 1
+
     docs = list()
-    for doc in col.find():
+    for doc in col.find().skip(skip).limit(dimPage):
         docs.append(doc)
-    result = dumps(docs, default=str, indent=4)
-    return result
+    
+    text = dumps(docs, default=str, indent=4)
+    metaData = ctx.copy()
+    metaData['cur_page'] = curPage
+    metaData['last_page'] = lastPage
+    return ContentData(text, metaData)

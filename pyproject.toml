@@ -11,6 +11,7 @@ python = "^3.12"
 pymongo = "3.12"
 pyyml = "^0.0.2"
 pyqt6 = "^6.7.0"
+attrs = "^23.2.0"
 
 
 [build-system]

@@ -8,6 +8,7 @@ class DbTree(QTreeView):
 
     def __init__(self, parent: QTreeView, content: QTextEdit | None = ...) -> None:
         super().__init__(parent)
+        self.setAccessibleName("Connections")
         self.modelManager = ModelManager.createBaseModel()
         self.setModel(self.modelManager.getModel())
         self.expanded.connect(self.on_item_expanded)
@@ -25,8 +26,8 @@ class DbTree(QTreeView):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
             index = self.currentIndex()
             data = index.model().itemData(index)
-            text = getAction(data[257])
-            self._content.refreshText(text)
+            metaData = getAction(data[257])
+            self._content.refreshData(metaData)
             self._content.setVisible(True)
         super().keyPressEvent(event)
         

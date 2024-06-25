@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSplitter, QTextEdit, QMainWindow
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSplitter, QMainWindow, QLabel
 from PyQt6.QtGui import QPainter
 from PyQt6.QtCore import  Qt
 from widgets.dbcontent import DbContent
@@ -15,10 +15,8 @@ class MainWindow(QMainWindow):
         contentLayout = QVBoxLayout()
         contentWin = QWidget()
         contentTxt = DbContent(contentWin)
-        contentStatus = ContentStatus(self)
-        #contentTxt.setVisible(False)
+        contentTxt.setVisible(False)
         contentLayout.addWidget(contentTxt)
-        #contentLayout.addWidget(contentStatus)
         contentWin.setLayout(contentLayout)
         dbTree = dbtree.DbTree(self, contentTxt)
         mainSplit = QSplitter(Qt.Orientation.Horizontal)
@@ -27,9 +25,12 @@ class MainWindow(QMainWindow):
         mainSplit.setStretchFactor(0, 0)
         mainSplit.setStretchFactor(1, 1)
         self.setCentralWidget(mainSplit)
+        mainStatus = ContentStatus(self)
+        mainStatus.addWidget(QLabel("(fixet status label)"))
+        self.setStatusBar(mainStatus)
         self.setTabOrder(dbTree, contentTxt)
         self.setTabOrder(contentTxt, dbTree)
-        self.setStatusBar(contentStatus)
+        
         self.show()
 
     def paintEvent(self, event):
