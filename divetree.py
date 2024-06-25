@@ -8,3 +8,5 @@ class DiveTree(QTreeWidget):
         self.root = QTreeWidgetItem( self, ["root","Connections"])
         self.child1 = QTreeWidgetItem(self.root, ["child","Figlio 1"])
         
+    def addChild(self, name):
+        QTreeWidgetItem(self,[name,"label"])
