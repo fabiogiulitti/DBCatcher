@@ -34,7 +34,7 @@ def retrieveDocuments(ctx: dict):
     colName = ctx['path'][2]
     db = references[id][dbName]
     col: Collection = db[colName]
-    docs = []
+    docs = list()
     for doc in col.find():
         docs.append(doc)
     result = dumps(docs, default=str, indent=4)

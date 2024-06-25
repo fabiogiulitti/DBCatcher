@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QTreeView
+from PyQt6.QtWidgets import QTreeView, QTextEdit
 from PyQt6.QtCore import Qt, QModelIndex
 from widgets.dbcontent import DbContent
 from core.manager import getAction
@@ -6,19 +6,18 @@ from widgets.modelmanager import ModelManager
 
 class DbTree(QTreeView):
 
-    content: DbContent
-
-    def __init__(self, parent: QTreeView | None = ...) -> None:
+    def __init__(self, parent: QTreeView, content: QTextEdit | None = ...) -> None:
         super().__init__(parent)
         self.modelManager = ModelManager.createBaseModel()
         self.setModel(self.modelManager.getModel())
         self.expanded.connect(self.on_item_expanded)
+        self._content = content
         self.show()
 
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.content.refreshText("testo di prova")
+            self._content.refreshText("testo di prova")
             event = None
         super().mousePressEvent(event)
     
@@ -27,8 +26,8 @@ class DbTree(QTreeView):
             index = self.currentIndex()
             data = index.model().itemData(index)
             text = getAction(data[257])
-            self.content.refreshText(text)
-            self.content.setVisible(True)
+            self._content.refreshText(text)
+            self._content.setVisible(True)
         super().keyPressEvent(event)
         
 
