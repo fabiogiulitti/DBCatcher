@@ -1,4 +1,4 @@
-from core.contentaction import ContentAction
+from core.treepath import ContentAction
 from drivers.mongodb.treeactionrules import getDocuments
 from core.ActonTypeEnum import ActonTypeEnum
 

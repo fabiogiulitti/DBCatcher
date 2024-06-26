@@ -2,6 +2,8 @@ from uuid import uuid4
 
 
 rules = {}
+actions = {}
+contentActions = {}
 references = {}
 
 class Node():
@@ -32,3 +34,26 @@ def make_session_id():
     return id
 
 
+def ItemAction(node_type_in: str, action_type: str):
+    def decorator(func):
+        def wrapper(param: dict):
+            result = func(param)
+            return result;
+
+        setattr(wrapper, ItemAction.__name__, True)
+        actions[action_type] = {node_type_in : wrapper}
+        return wrapper
+    return decorator
+
+
+def ContentAction(obj_type: str, action_type: str):
+    def decorator(func):
+        def wrapper(param: dict):
+            result = func(param)
+            return result;
+
+        setattr(wrapper, ContentAction.__name__, True)
+        print(f"action {action_type}, obj {obj_type}")
+        contentActions[action_type] = {obj_type : wrapper}
+        return wrapper
+    return decorator

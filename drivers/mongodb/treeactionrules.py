@@ -1,5 +1,5 @@
 from core.treepath import TreePath,make_session_id, references
-from core.itemaction import ItemAction
+from core.treepath import ItemAction
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from json import dumps

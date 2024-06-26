@@ -1,6 +1,6 @@
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 from configyaml import config as conf
-from core.manager import getNav
+from core.manager import executeTreeNav
 from core.treepath import Node
 from widgets.utils import createItem
 
@@ -24,7 +24,7 @@ class ModelManager:
     def expandModel(self, index):
         item = self.model.itemFromIndex(index)
         data = index.model().itemData(index)
-        node: Node = getNav(data[257])
+        node: Node = executeTreeNav(data[257])
         addNodes(item,node)
 
         

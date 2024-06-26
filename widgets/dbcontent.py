@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QTextEdit, QSizePolicy
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
-from core.manager import getCntAction
+from core.manager import executeCntAction
 from widgets.ContentData import ContentData
 from core.ActonTypeEnum import ActonTypeEnum
 
@@ -31,14 +31,14 @@ class DbContent(QTextEdit):
             ctx = self.metaData
             ctx['action_type'] = ActonTypeEnum.PAGE_DOWN.value
             ctx['action_obj'] = 'edit'
-            result: ContentData = getCntAction(ctx)
+            result: ContentData = executeCntAction(ctx)
             if result is not None:
                 self.refreshData(result)
         elif event.modifiers() == Qt.KeyboardModifier.ControlModifier and  event.key() == Qt.Key.Key_PageUp:
             ctx = self.metaData
             ctx['action_type'] = ActonTypeEnum.PAGE_UP.value
             ctx['action_obj'] = 'edit'
-            result: ContentData = getCntAction(ctx)
+            result: ContentData = executeCntAction(ctx)
             if result != None:
                 self.refreshData(result)
         super().keyPressEvent(event)

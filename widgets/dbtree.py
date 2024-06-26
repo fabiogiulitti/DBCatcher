@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QTreeView, QTextEdit
 from PyQt6.QtCore import Qt, QModelIndex
 from widgets.dbcontent import DbContent
-from core.manager import getAction
+from core.manager import executeTreeAction
 from widgets.modelmanager import ModelManager
 
 class DbTree(QTreeView):
@@ -26,7 +26,7 @@ class DbTree(QTreeView):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
             index = self.currentIndex()
             data = index.model().itemData(index)
-            metaData = getAction(data[257])
+            metaData = executeTreeAction(data[257])
             self._content.refreshData(metaData)
             self._content.setVisible(True)
         super().keyPressEvent(event)
