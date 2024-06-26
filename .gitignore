@@ -4,3 +4,4 @@ scripts/
 __*
 pyvenv.cfg
 share/
+config/config.yaml
