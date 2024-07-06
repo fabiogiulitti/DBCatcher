@@ -4,4 +4,5 @@ scripts/
 __*
 pyvenv.cfg
 share/
+.vscode/
 config/config.yaml

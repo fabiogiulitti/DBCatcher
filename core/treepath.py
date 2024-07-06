@@ -1,10 +1,8 @@
 from uuid import uuid4
+from core.ActonTypeEnum import ActionTypeEnum
 
-
-rules = {}
-actions = {}
-contentActions = {}
-references = {}
+drivers = dict()
+references = dict()
 
 class Node():
     def __init__(self, nodeType, items, session=None):
@@ -15,16 +13,17 @@ class Node():
         
 def TreePath(node_type_in: str, node_type_out: str):
     def decorator(func):
-        def wrapper(param: dict):
-            result,id = func(param)
+        def wrapper(self, param: dict):
+            result,id = func(self, param)
             node = Node(node_type_out, result,id)
-            if node_type_out not in rules:
+            if node_type_out not in self._navActions:
                 node.leaf = True
             return node
             return result;
 
-        setattr(wrapper, TreePath.__name__, True)
-        rules[node_type_in] = wrapper
+        setattr(wrapper, "node_type_in", node_type_in)
+        setattr(wrapper, "node_type_out", node_type_out)
+        #rules[node_type_in] = wrapper
         return wrapper
     return decorator
 
@@ -34,26 +33,26 @@ def make_session_id():
     return id
 
 
-def ItemAction(node_type_in: str, action_type: str):
+def ItemAction(node_type_in: str, action_type: ActionTypeEnum):
     def decorator(func):
-        def wrapper(param: dict):
-            result = func(param)
+        def wrapper(self, param: dict):
+            result = func(self, param)
             return result;
 
-        setattr(wrapper, ItemAction.__name__, True)
-        actions[action_type] = {node_type_in : wrapper}
+        setattr(wrapper, "node_type_in", node_type_in)
+        setattr(wrapper, "action_type", action_type)
+        #actions[action_type] = {node_type_in : wrapper}
         return wrapper
     return decorator
 
 
-def ContentAction(obj_type: str, action_type: str):
+def ContentAction(action_type: ActionTypeEnum):
     def decorator(func):
-        def wrapper(param: dict):
-            result = func(param)
+        def wrapper(self, param: dict):
+            result = func(self, param)
             return result;
 
-        setattr(wrapper, ContentAction.__name__, True)
-        print(f"action {action_type}, obj {obj_type}")
-        contentActions[action_type] = {obj_type : wrapper}
+        setattr(wrapper, 'action_type', action_type)
+        #contentActions[action_type] = {obj_type : wrapper}
         return wrapper
     return decorator

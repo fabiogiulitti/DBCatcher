@@ -3,7 +3,7 @@ from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 from core.manager import executeCntAction
 from widgets.ContentData import ContentData
-from core.ActonTypeEnum import ActonTypeEnum
+from core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
 
 class DbContent(QTextEdit):
     def __init__(self,parent):
@@ -29,15 +29,15 @@ class DbContent(QTextEdit):
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_PageDown:
             ctx = self.metaData
-            ctx['action_type'] = ActonTypeEnum.PAGE_DOWN.value
-            ctx['action_obj'] = 'edit'
+            ctx['action_type'] = ActionTypeEnum.NEXT_PAGE
+            ctx['action_obj'] = ObjectTypeEnum.TEXT_AREA
             result: ContentData = executeCntAction(ctx)
             if result is not None:
                 self.refreshData(result)
         elif event.modifiers() == Qt.KeyboardModifier.ControlModifier and  event.key() == Qt.Key.Key_PageUp:
             ctx = self.metaData
-            ctx['action_type'] = ActonTypeEnum.PAGE_UP.value
-            ctx['action_obj'] = 'edit'
+            ctx['action_type'] = ActionTypeEnum.PREVIOUS_PAGE
+            ctx['action_obj'] = ObjectTypeEnum.TEXT_AREA
             result: ContentData = executeCntAction(ctx)
             if result != None:
                 self.refreshData(result)

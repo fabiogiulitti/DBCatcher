@@ -1,7 +1,7 @@
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
-from configyaml import config as conf
 from core.manager import executeTreeNav
 from core.treepath import Node
+from core.config.ConfigManager import retrieveConnections
 from widgets.utils import createItem
 
 class ModelManager:
@@ -12,7 +12,7 @@ class ModelManager:
         model = QStandardItemModel()
         model.setHorizontalHeaderLabels(['Connections'])
         rootItem = model.invisibleRootItem()
-        rootItem.appendRows(getConnections())
+        rootItem.appendRows(addConnections())
         manager = ModelManager()
         manager.model = model
         return manager
@@ -33,17 +33,18 @@ def addNodes(parent: QStandardItem, node: Node):
         parent.appendRows(map(lambda i: createItem(parent.data(), i, node), node.items))
 
 
-def getConnections():
+def addConnections():
         connectionItems = list()
-        for connection in conf.get_value("connections"):
-            name = connection['name']
-            type = connection['type']
-            uri = connection['connectionURI']
+        for connection in retrieveConnections():
+            name = connection.name
+            type = connection.type.value
+            uri = connection.connectionURI
             mongoItem = QStandardItem(f"{name} {type}")
             mongoItem.setData({'levelTag' : 'connections'
             ,'connectionURI' : uri})
             mongoItem.appendRow(QStandardItem('(LOADING)'))
             connectionItems.append(mongoItem)
         return connectionItems
+
 
 

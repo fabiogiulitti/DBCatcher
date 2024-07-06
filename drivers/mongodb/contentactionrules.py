@@ -1,19 +1,32 @@
 from core.treepath import ContentAction
+from drivers.mongodb.AbstractDriver import AbstractDriver
 from drivers.mongodb.treeactionrules import getDocuments
-from core.ActonTypeEnum import ActonTypeEnum
+from core.ActonTypeEnum import ActionTypeEnum
 
-@ContentAction(obj_type='edit', action_type=ActonTypeEnum.PAGE_DOWN.value)
-def retrieveMoreDocuments(ctx: dict):
-    nextPage = ctx['cur_page'] + 1
-    print(f"vals {nextPage} {ctx['last_page']}")
-    if nextPage <= ctx['last_page']:
-        return getDocuments(ctx, curPage=nextPage)
+class MyDriver(AbstractDriver):
+
+
+    def __init__(self) -> None:
+        methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'action_type')]
+        for method in methods:
+            self._actions[getattr(method, 'action_type')] = method
+        super().__init__()
+        
+
+    @ContentAction(action_type=ActionTypeEnum.NEXT_PAGE)
+    def _retrieveMoreDocuments(self, ctx: dict):
+        nextPage = ctx['cur_page'] + 1
+        print(f"vals {nextPage} {ctx['last_page']}")
+        if nextPage <= ctx['last_page']:
+            return getDocuments(ctx, curPage=nextPage)
+        
     
-@ContentAction(obj_type='edit', action_type=ActonTypeEnum.PAGE_UP.value)
-def retrievePreviousDocuments(ctx: dict):
-    curPage = ctx['cur_page']
-    if curPage > 0:
-        prevPage = curPage - 1
-        return getDocuments(ctx, curPage=prevPage)
-    else:
-        return None
+    @ContentAction(action_type=ActionTypeEnum.PREVIOUS_PAGE)
+    def _retrievePreviousDocuments(self, ctx: dict):
+        curPage = ctx['cur_page']
+        if curPage > 0:
+            prevPage = curPage - 1
+            return getDocuments(ctx, curPage=prevPage)
+        else:
+            return None
+

@@ -3,6 +3,7 @@ from PyQt6.QtCore import Qt, QModelIndex
 from widgets.dbcontent import DbContent
 from core.manager import executeTreeAction
 from widgets.modelmanager import ModelManager
+from core.ActonTypeEnum import ActionTypeEnum
 
 class DbTree(QTreeView):
 
@@ -26,7 +27,9 @@ class DbTree(QTreeView):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
             index = self.currentIndex()
             data = index.model().itemData(index)
-            metaData = executeTreeAction(data[257])
+            ctx = data[257].copy()
+            ctx['action_type'] = ActionTypeEnum.CLICK
+            metaData = executeTreeAction(ctx)
             self._content.refreshData(metaData)
             self._content.setVisible(True)
         super().keyPressEvent(event)

@@ -4,33 +4,50 @@ from pymongo import MongoClient
 from pymongo.collection import Collection
 from json import dumps
 from widgets.ContentData import ContentData
+from drivers.mongodb.AbstractDriver import AbstractTreeAction
+from core.ActonTypeEnum import ActionTypeEnum
 
-@TreePath(node_type_in='connections', node_type_out='databases')
-def retrieveDatabases(ctx: dict):
-    id = make_session_id()
-    references[id] = {'client' : MongoClient(ctx['connectionURI'])}
-    databases = references[id]['client'].list_database_names()
-    return (databases,id)
+class TreeActions(AbstractTreeAction):
+
+    def __init__(self) -> None:
+        methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'action_type')]
+        for method in methods:
+            self._itemActions[getattr(method, 'node_type_in')] = {getattr(method, 'action_type') : method}
+        methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'node_type_in')]
+        for method in methods:
+            print("settato tree path")
+            self._navActions[getattr(method, 'node_type_in')] = method
+        super().__init__()
+        
+
+    @TreePath(node_type_in='connections', node_type_out='databases')
+    def retrieveDatabases(self, ctx: dict):
+        id = make_session_id()
+        references[id] = {'client' : MongoClient(ctx['connectionURI'])}
+        databases = references[id]['client'].list_database_names()
+        return (databases,id)
 
 
-@TreePath(node_type_in='databases', node_type_out='collections_holder')
-def retrieveCollectionsHolding(ctx: dict):
-    return (['collections'],ctx['sessionID'])
+    @TreePath(node_type_in='databases', node_type_out='collections_holder')
+    def retrieveCollectionsHolding(self, ctx: dict):
+        return (['collections'],ctx['sessionID'])
 
 
-@TreePath(node_type_in='collections_holder', node_type_out='collections')
-def retrieveCollections(ctx: dict):
-    id = ctx['sessionID']
-    client = references[id]['client']
-    dbName = ctx['path'][0]
-    db = client[ctx['path'][0]]
-    references[id][dbName] = db
-    collections = db.list_collection_names()
-    return (collections,id)
+    @TreePath(node_type_in='collections_holder', node_type_out='collections')
+    def retrieveCollections(self, ctx: dict):
+        id = ctx['sessionID']
+        client = references[id]['client']
+        dbName = ctx['path'][0]
+        db = client[ctx['path'][0]]
+        references[id][dbName] = db
+        collections = db.list_collection_names()
+        return (collections,id)
+        
 
-@ItemAction(node_type_in='collections', action_type='clicked')
-def retrieveFirstDocuments(ctx: dict):
-    return getDocuments(ctx)
+    @ItemAction(node_type_in='collections', action_type = ActionTypeEnum.CLICK)
+    def retrieveFirstDocuments(self, ctx: dict):
+        return getDocuments(ctx)
+
 
 def getDocuments(ctx: dict, curPage: int = 0, dimPage: int = 25):
     id = ctx['sessionID']
