@@ -37,13 +37,14 @@ def addConnections():
         connectionItems = list()
         for connection in retrieveConnections():
             name = connection.name
-            type = connection.type.value
+            type = connection.type.name
             uri = connection.connectionURI
-            mongoItem = QStandardItem(f"{name} {type}")
-            mongoItem.setData({'levelTag' : 'connections'
-            ,'connectionURI' : uri})
-            mongoItem.appendRow(QStandardItem('(LOADING)'))
-            connectionItems.append(mongoItem)
+            connectionItem = QStandardItem(f"{name} {type}")
+            connectionItem.setData({'levelTag' : 'connections'
+            ,'connectionURI' : uri
+            ,'type' : type})
+            connectionItem.appendRow(QStandardItem('(LOADING)'))
+            connectionItems.append(connectionItem)
         return connectionItems
 
 

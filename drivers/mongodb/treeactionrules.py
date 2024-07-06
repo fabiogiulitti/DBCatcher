@@ -4,20 +4,19 @@ from pymongo import MongoClient
 from pymongo.collection import Collection
 from json import dumps
 from widgets.ContentData import ContentData
-from drivers.mongodb.AbstractDriver import AbstractTreeAction
+from core.driver.abstractdriver import AbstractTreeAction
 from core.ActonTypeEnum import ActionTypeEnum
 
 class TreeActions(AbstractTreeAction):
 
     def __init__(self) -> None:
+        super().__init__()
         methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'action_type')]
         for method in methods:
             self._itemActions[getattr(method, 'node_type_in')] = {getattr(method, 'action_type') : method}
-        methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'node_type_in')]
+        methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'node_type_out')]
         for method in methods:
-            print("settato tree path")
             self._navActions[getattr(method, 'node_type_in')] = method
-        super().__init__()
         
 
     @TreePath(node_type_in='connections', node_type_out='databases')

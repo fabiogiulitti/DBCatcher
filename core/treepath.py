@@ -19,7 +19,6 @@ def TreePath(node_type_in: str, node_type_out: str):
             if node_type_out not in self._navActions:
                 node.leaf = True
             return node
-            return result;
 
         setattr(wrapper, "node_type_in", node_type_in)
         setattr(wrapper, "node_type_out", node_type_out)
