@@ -13,9 +13,9 @@ drivers[DriverTypeEnum.MONGODB.name] = inst
 
 def executeTreeNav(ctx: dict):
     driver: AbstractDbDriver = drivers[ctx['type']]
-    print(driver)
     obj: car.AbstractTreeAction = driver.getObject(ObjectTypeEnum.DB_TREE)
-    return obj.executeAction(ctx['levelTag'], ActionTypeEnum.EXPAND, ctx)
+    path = ctx.get("path", [''])
+    return obj.executeNavAction(ctx['levelTag'], path[-1], ctx)
 
 
 def executeTreeAction(ctx: dict):

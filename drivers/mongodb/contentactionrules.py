@@ -11,13 +11,11 @@ class MyDriver(AbstractDriver):
         methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'action_type')]
         for method in methods:
             self._actions[getattr(method, 'action_type')] = method
-        super().__init__()
         
 
     @ContentAction(action_type=ActionTypeEnum.NEXT_PAGE)
     def _retrieveMoreDocuments(self, ctx: dict):
         nextPage = ctx['cur_page'] + 1
-        print(f"vals {nextPage} {ctx['last_page']}")
         if nextPage <= ctx['last_page']:
             return getDocuments(ctx, curPage=nextPage)
         

@@ -1,3 +1,4 @@
+from itertools import count
 from core.ActonTypeEnum import ActionTypeEnum
 
 
@@ -24,3 +25,9 @@ class AbstractTreeAction:
         else:
             return self._itemActions[node_type_in][action_type](ctx)
     
+    def executeNavAction(self, nodeTypeIn: str, nodeTypeOut: str, ctx: dict):
+        item: dict = self._navActions[nodeTypeIn]
+        if len(item) > 1:
+            return item[nodeTypeOut](ctx)
+        else:
+            return item['default'](ctx)

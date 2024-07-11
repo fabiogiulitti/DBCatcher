@@ -5,7 +5,9 @@ from core.config.ConfigManager import retrieveConnections
 from widgets.utils import createItem
 
 class ModelManager:
-    
+
+    def __init__(self) -> None:
+         self.model = None
 
     @staticmethod
     def createBaseModel() -> QStandardItemModel:
@@ -46,6 +48,4 @@ def addConnections():
             connectionItem.appendRow(QStandardItem('(LOADING)'))
             connectionItems.append(connectionItem)
         return connectionItems
-
-
 

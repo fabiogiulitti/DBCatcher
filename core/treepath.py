@@ -11,7 +11,7 @@ class Node():
         self.session = session
         self.leaf = False
         
-def TreePath(node_type_in: str, node_type_out: str):
+def TreePath(node_type_in: str, node_type_out: str, holder_type: str = 'default'):
     def decorator(func):
         def wrapper(self, param: dict):
             result,id = func(self, param)
@@ -22,6 +22,7 @@ def TreePath(node_type_in: str, node_type_out: str):
 
         setattr(wrapper, "node_type_in", node_type_in)
         setattr(wrapper, "node_type_out", node_type_out)
+        setattr(wrapper, "holder_type", holder_type)
         #rules[node_type_in] = wrapper
         return wrapper
     return decorator
@@ -40,7 +41,6 @@ def ItemAction(node_type_in: str, action_type: ActionTypeEnum):
 
         setattr(wrapper, "node_type_in", node_type_in)
         setattr(wrapper, "action_type", action_type)
-        #actions[action_type] = {node_type_in : wrapper}
         return wrapper
     return decorator
 
@@ -52,6 +52,5 @@ def ContentAction(action_type: ActionTypeEnum):
             return result;
 
         setattr(wrapper, 'action_type', action_type)
-        #contentActions[action_type] = {obj_type : wrapper}
         return wrapper
     return decorator

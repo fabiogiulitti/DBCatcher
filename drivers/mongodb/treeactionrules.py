@@ -16,7 +16,7 @@ class TreeActions(AbstractTreeAction):
             self._itemActions[getattr(method, 'node_type_in')] = {getattr(method, 'action_type') : method}
         methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'node_type_out')]
         for method in methods:
-            self._navActions[getattr(method, 'node_type_in')] = method
+            self._navActions[getattr(method, 'node_type_in')] = {'default' : method}
         
 
     @TreePath(node_type_in='connections', node_type_out='databases')

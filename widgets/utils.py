@@ -4,10 +4,10 @@ from core.treepath import Node
 
 def createItem(parentData: dict, text: str, node: Node) -> QStandardItem:
     item = QStandardItem(text)
+    
     data = {'levelTag' : node.nodeType
             ,'sessionID' : node.session
-            ,'type' : parentData['type']
-            ,'connectionURI' : parentData['connectionURI']}
+            ,'type' : parentData['type']}
     if ('path' in parentData):
         data['path'] = parentData['path'] + [text]
     else:

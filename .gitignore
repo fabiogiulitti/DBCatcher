@@ -2,7 +2,8 @@ lib/
 include/
 scripts/
 __*
-pyvenv.cfg
 share/
 .vscode/
 config/config.yaml
+pyvenv.cfg
+poetry.lock
