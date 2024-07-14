@@ -1,5 +1,7 @@
 from PyQt6.QtWidgets import QTreeView, QTextEdit
 from PyQt6.QtCore import Qt, QModelIndex
+from core.driver.abstractdataresponse import AbstractDataResponse
+from widgets.ContentData import ContentData
 from widgets.dbcontent import DbContent
 from core.manager import executeTreeAction
 from widgets.modelmanager import ModelManager
@@ -29,8 +31,9 @@ class DbTree(QTreeView):
             data = index.model().itemData(index)
             ctx = data[257].copy()
             ctx['action_type'] = ActionTypeEnum.CLICK
-            metaData = executeTreeAction(ctx)
-            self._content.refreshData(metaData)
+            response: AbstractDataResponse = executeTreeAction(ctx)
+            content: ContentData = response.toJson()
+            self._content.refreshData(content)
             self._content.setVisible(True)
         super().keyPressEvent(event)
         

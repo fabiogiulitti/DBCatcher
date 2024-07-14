@@ -2,11 +2,29 @@ from ast import List
 import inspect
 from platform import node
 from core.ActonTypeEnum import ActionTypeEnum
+from core.driver.abstractdataresponse import AbstractDataResponse
 from core.treepath import ItemAction, TreePath,make_session_id, references
 from json import dumps
 from widgets.ContentData import ContentData
 from core.driver.abstractdriver import AbstractTreeAction
 from psycopg2 import connect, extensions
+from attr import ib, s
+
+
+@s
+class DataResponse(AbstractDataResponse):
+    _cols: list = ib()
+    _rows: list = ib()
+    _metaData: dict = ib()
+
+
+    def toJson(self):
+        result = list()
+        for row in self._rows:
+            result.append(dict(zip(self._cols, row)))
+        text = dumps(result, default=str, indent=4)
+        return ContentData(text, self._metaData)
+
 
 class PSTreeActions(AbstractTreeAction):
     
@@ -147,27 +165,36 @@ def getRows(ctx: dict, curPage: int = 0, dimPage: int = 25):
     schemaName = ctx['path'][1]
     tabName = ctx['path'][-1]
 
-    #numDocs = col.count()
-    #skip = curPage * dimPage
-    #lastPage = numDocs / dimPage - 1
-
-    
     conn = references[id]['client']
+    skip = curPage * dimPage
+
+    lastPage = getTableCount(dimPage, schemaName, tabName, conn)
+    
     cur = conn.cursor()
     cur.execute(f"""
             SELECT *
             FROM {schemaName}.{tabName}
-            limit 25
+            offset {skip}
+            limit {dimPage}
         """)
 
     rows = cur.fetchall()
-    colnames = [desc[0] for desc in cur.description]
-    resultSet = []
-    for row in rows:
-        resultSet.append(dict(zip(colnames, row)))
+    cols = [desc[0] for desc in cur.description]
+    cur.close()
     
-    text = dumps(resultSet, default=str, indent=4)
     metaData = ctx.copy()
     metaData['cur_page'] = curPage
-    #metaData['last_page'] = lastPage
-    return ContentData(text, metaData)
+    metaData['last_page'] = lastPage
+    return DataResponse(cols, rows, metaData)
+
+
+def getTableCount(dimPage, schemaName, tabName, conn):
+    cur = conn.cursor()
+    cur.execute(f"""
+                select count(*) as numRecords
+                from {schemaName}.{tabName}
+            """)
+    numRows = cur.fetchone()[0]
+    lastPage = numRows / dimPage - 1
+    cur.close()
+    return lastPage

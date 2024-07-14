@@ -1,3 +1,5 @@
+from attr import ib, s
+from core.driver.abstractdataresponse import AbstractDataResponse
 from core.treepath import TreePath,make_session_id, references
 from core.treepath import ItemAction
 from pymongo import MongoClient
@@ -6,6 +8,16 @@ from json import dumps
 from widgets.ContentData import ContentData
 from core.driver.abstractdriver import AbstractTreeAction
 from core.ActonTypeEnum import ActionTypeEnum
+
+@s
+class MongoDataResponse(AbstractDataResponse):
+    _docs: list = ib()
+    _metaData: dict = ib()
+
+    def toJson(self):
+        text = dumps(self._docs, default=str, indent=4)
+        return ContentData(text, self._metaData)
+
 
 class TreeActions(AbstractTreeAction):
 
@@ -63,8 +75,7 @@ def getDocuments(ctx: dict, curPage: int = 0, dimPage: int = 25):
     for doc in col.find().skip(skip).limit(dimPage):
         docs.append(doc)
     
-    text = dumps(docs, default=str, indent=4)
     metaData = ctx.copy()
     metaData['cur_page'] = curPage
     metaData['last_page'] = lastPage
-    return ContentData(text, metaData)
+    return MongoDataResponse(docs, metaData)

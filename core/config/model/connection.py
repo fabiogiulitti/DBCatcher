@@ -14,7 +14,7 @@ class Connection:
 
     def __init__(self, values: dict):
         self.name = values['name']
-        self.type = DriverTypeEnum.from_value(values['type'])
+        self.type = DriverTypeEnum.fromLabel(values['type'])
         self.connectionURI = values['connectionURI']
         self.user = values.get("user", None)
         self.password = values.get("password", None)

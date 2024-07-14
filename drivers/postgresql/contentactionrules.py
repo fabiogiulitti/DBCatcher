@@ -2,8 +2,9 @@ from core.treepath import ContentAction
 from core.driver.abstractdriver import AbstractDriver
 from drivers.mongodb.treeactionrules import getDocuments
 from core.ActonTypeEnum import ActionTypeEnum
+from drivers.postgresql.treeactionrules import getRows
 
-class MyDriver(AbstractDriver):
+class PSActionDef(AbstractDriver):
 
 
     def __init__(self) -> None:
@@ -11,15 +12,13 @@ class MyDriver(AbstractDriver):
         methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'action_type')]
         for method in methods:
             self._actions[getattr(method, 'action_type')] = method
-        super().__init__()
         
 
     @ContentAction(action_type=ActionTypeEnum.NEXT_PAGE)
     def _retrieveMoreDocuments(self, ctx: dict):
         nextPage = ctx['cur_page'] + 1
-        print(f"vals {nextPage} {ctx['last_page']}")
         if nextPage <= ctx['last_page']:
-            return getDocuments(ctx, curPage=nextPage)
+            return getRows(ctx, nextPage)
         
     
     @ContentAction(action_type=ActionTypeEnum.PREVIOUS_PAGE)
@@ -27,7 +26,7 @@ class MyDriver(AbstractDriver):
         curPage = ctx['cur_page']
         if curPage > 0:
             prevPage = curPage - 1
-            return getDocuments(ctx, curPage=prevPage)
+            return getRows(ctx, curPage=prevPage)
         else:
             return None
 
