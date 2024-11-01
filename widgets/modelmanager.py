@@ -39,7 +39,7 @@ def addConnections():
         connectionItems = list()
         for connection in retrieveConnections():
             name = connection.name
-            type = connection.type.name
+            type = connection.type
             uri = connection.connectionURI
             connectionItem = QStandardItem(f"{name} {type}")
             connectionItem.setData({'levelTag' : 'connections'

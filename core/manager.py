@@ -12,21 +12,21 @@ inst = MongoDriver()
 drivers[DriverTypeEnum.MONGODB.name] = inst
 
 def executeTreeNav(ctx: dict):
-    driver: AbstractDbDriver = drivers[ctx['type']]
+    driver: AbstractDbDriver = drivers[ctx['type'].name]
     obj: car.AbstractTreeAction = driver.getObject(ObjectTypeEnum.DB_TREE)
     path = ctx.get("path", [''])
     return obj.executeNavAction(ctx['levelTag'], path[-1], ctx)
 
 
 def executeTreeAction(ctx: dict):
-    driver: AbstractDbDriver = drivers[ctx['type']]
+    driver: AbstractDbDriver = drivers[ctx['type'].name]
     obj: car.AbstractTreeAction = driver.getObject(ObjectTypeEnum.DB_TREE)
     return obj.executeAction(ctx['levelTag'], ctx['action_type'], ctx)
 
 
 
-def executeCntAction(ctx: dict):
-    driver: AbstractDbDriver = drivers[ctx['type']]
+def executeCntAction(ctx: dict):    
+    driver: AbstractDbDriver = drivers[ctx['type'].name]
     obj: car.AbstractDriver = driver.getObject(ctx['action_obj'])
     return obj.executeAction(ctx['action_type'], ctx)
 

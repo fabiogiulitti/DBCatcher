@@ -17,6 +17,9 @@ class MongoDataResponse(AbstractDataResponse):
     def toJson(self):
         text = dumps(self._docs, default=str, indent=4)
         return ContentData(text, self._metaData)
+    
+    def metadata(self):
+        return self._metaData
 
 
 class TreeActions(AbstractTreeAction):

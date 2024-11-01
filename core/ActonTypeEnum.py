@@ -1,6 +1,7 @@
 from cProfile import label
 from enum import Enum
 
+from widgets.model import viewtypeenum
 from widgets.model.viewtypeenum import ViewTypeEnum
 
 
@@ -25,7 +26,7 @@ class DriverTypeEnum(Enum):
 
     def __init__(self, label, view) -> None:
         self.label = label
-        self.view = view
+        self.view: ViewTypeEnum = view
 
 
     @classmethod

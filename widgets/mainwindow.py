@@ -4,6 +4,7 @@ from PyQt6.QtCore import  Qt
 from widgets.dbcontent import DbContent, QTextEdit
 import widgets.dbtree as dbtree
 from widgets.statusbar import ContentStatus
+from widgets.contentWin import ContentWin
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -11,26 +12,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Dive into db')
 
         self.setGeometry(300, 200, 800, 600)
-
-        cntLayout = QVBoxLayout()
-        #cntLayout.setContentsMargins(50, 20, 20, 20)
         
-        contentWin = QWidget()
-        queryTxt = QTextEdit(contentWin)
-        queryTxt.setText("db.collection.find()")
-        queryTxt.setTabChangesFocus(True)
-        cntLayout.addSpacerItem(QSpacerItem(100, 30, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
-        cntLayout.addWidget(QLabel("Query"))
-        cntLayout.addWidget(queryTxt)
-        contentTxt = DbContent(contentWin)
-        #contentTxt.setVisible(False)
-        cntLayout.addSpacerItem(QSpacerItem(100, 30, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
-        cntLayout.addWidget(QLabel("Result data"))
-        cntLayout.addWidget(contentTxt)
-        cntLayout.setStretchFactor(queryTxt, 2)
-        cntLayout.setStretchFactor(contentTxt, 11)
-        contentWin.setLayout(cntLayout)
-        dbTree = dbtree.DbTree(self, contentTxt)
+        contentWin = ContentWin(self)
+        dbTree = dbtree.DbTree(self, contentWin)
         mainSplit = QSplitter(Qt.Orientation.Horizontal)
         mainSplit.addWidget(dbTree)
         mainSplit.addWidget(contentWin)
@@ -40,9 +24,8 @@ class MainWindow(QMainWindow):
         mainStatus = ContentStatus(self)
         mainStatus.addWidget(QLabel("(fixet status label)"))
         self.setStatusBar(mainStatus)
-        self.setTabOrder(dbTree, contentTxt)
-        self.setTabOrder(contentTxt, queryTxt)
-        #self.setTabOrder(queryTxt, dbtree)
+        self.setTabOrder(dbTree, contentWin.contentTxt)
+        self.setTabOrder(contentWin.contentTxt, contentWin.queryTxt)
         
         self.show()
 

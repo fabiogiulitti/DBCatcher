@@ -1,14 +1,16 @@
 from ast import List
+from importlib import metadata
 import inspect
 from platform import node
 from core.ActonTypeEnum import ActionTypeEnum
 from core.driver.abstractdataresponse import AbstractDataResponse
 from core.treepath import ItemAction, TreePath,make_session_id, references
 from json import dumps
-from widgets.ContentData import ContentData
+from widgets.ContentData import ContentData, ContentDataModel
 from core.driver.abstractdriver import AbstractTreeAction
 from psycopg2 import connect, extensions
 from attr import ib, s
+from PyQt6.QtGui import QStandardItemModel, QStandardItem
 
 
 @s
@@ -24,6 +26,20 @@ class DataResponse(AbstractDataResponse):
             result.append(dict(zip(self._cols, row)))
         text = dumps(result, default=str, indent=4)
         return ContentData(text, self._metaData)
+    
+    def toTabular(self):
+        model = QStandardItemModel(len(self._rows), len(self._cols))
+        model.setHorizontalHeaderLabels(self._cols)
+
+        for row in range(len(self._rows)):
+            for col in range(len(self._cols)):
+                item = QStandardItem(str(self._rows[row][col]))
+                model.setItem(row, col, item)
+
+        return ContentDataModel(model, self._metaData)
+    
+    def metadata(self):
+        return self._metaData
 
 
 class PSTreeActions(AbstractTreeAction):

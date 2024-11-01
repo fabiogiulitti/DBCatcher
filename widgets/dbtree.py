@@ -1,21 +1,23 @@
-from PyQt6.QtWidgets import QTreeView, QTextEdit
+from PyQt6.QtWidgets import QTreeView, QTextEdit, QWidget
 from PyQt6.QtCore import Qt, QModelIndex
 from core.driver.abstractdataresponse import AbstractDataResponse
+from widgets import contentWin
 from widgets.ContentData import ContentData
 from widgets.dbcontent import DbContent
 from core.manager import executeTreeAction
 from widgets.modelmanager import ModelManager
 from core.ActonTypeEnum import ActionTypeEnum
+from widgets.contentWin import ContentWin
 
 class DbTree(QTreeView):
 
-    def __init__(self, parent: QTreeView, content: QTextEdit | None = ...) -> None:
+    def __init__(self, parent: QTreeView, content: ContentWin | None = ...) -> None:
         super().__init__(parent)
         self.setAccessibleName("Connections")
         self.modelManager = ModelManager.createBaseModel()
         self.setModel(self.modelManager.getModel())
         self.expanded.connect(self.on_item_expanded)
-        self._content = content
+        self._content: ContentWin = content
         self.show()
 
 
@@ -32,9 +34,7 @@ class DbTree(QTreeView):
             ctx = data[257].copy()
             ctx['action_type'] = ActionTypeEnum.CLICK
             response: AbstractDataResponse = executeTreeAction(ctx)
-            content: ContentData = response.toJson()
-            self._content.refreshData(content)
-            self._content.setVisible(True)
+            self._content.refreshContent(response)
         super().keyPressEvent(event)
         
 
