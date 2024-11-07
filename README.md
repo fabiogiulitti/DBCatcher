@@ -1,4 +1,4 @@
-# NablaDB
+# DBA11Y
 
 This project is at very first stage of development. The goal is to make a QT based application to manage many database connection.
 This application is focused to be fully accessible to blind persons.
