@@ -36,6 +36,7 @@ class ContentWin(QWidget):
         cntLayout.setStretchFactor(self.queryTxt, 2)
         cntLayout.setStretchFactor(self.contentTxt, 11)
         self.setLayout(cntLayout)
+        self.setVisible(False)
 
     def refreshContent(self, response: AbstractDataResponse):
         metadata = response.metadata()
@@ -47,6 +48,9 @@ class ContentWin(QWidget):
             self.contentTxt.setVisible(True)
         elif type.view == ViewTypeEnum.TABULAR:
             data = response.toTabular()
-            self.contentTab.setModel(data._result)
+            self.contentTab.refreshData(data)
+            self.queryTxt.setText(data.query)
             self.contentTxt.setVisible(False)
             self.contentTab.setVisible(True)
+
+        self.setVisible(True)

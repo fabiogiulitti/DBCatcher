@@ -16,6 +16,7 @@ class ObjectTypeEnum(Enum):
     TEXT_AREA = 'text_area'
     QUERY_EDIT = 'query_edit'
     DB_TREE = 'db_tree'
+    TABULAR = 'tabular'
 
 
 class DriverTypeEnum(Enum):

@@ -25,7 +25,8 @@ class MainWindow(QMainWindow):
         mainStatus.addWidget(QLabel("(fixet status label)"))
         self.setStatusBar(mainStatus)
         self.setTabOrder(dbTree, contentWin.contentTxt)
-        self.setTabOrder(contentWin.contentTxt, contentWin.queryTxt)
+        self.setTabOrder(contentWin.contentTxt, contentWin.contentTab)
+        self.setTabOrder(contentWin.contentTab, contentWin.queryTxt)
         
         self.show()
 

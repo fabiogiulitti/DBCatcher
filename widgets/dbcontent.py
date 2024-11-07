@@ -14,7 +14,6 @@ class DbContent(QTextEdit):
         self.setAccessibleDescription("Content view")
         self.setAccessibleName("Content view box")
         self.setTabChangesFocus(True)
-        #self.resize(400, 300)
         self.show()
 
 

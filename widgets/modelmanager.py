@@ -41,7 +41,7 @@ def addConnections():
             name = connection.name
             type = connection.type
             uri = connection.connectionURI
-            connectionItem = QStandardItem(f"{name} {type}")
+            connectionItem = QStandardItem(f"{name} -> {type.name}")
             connectionItem.setData({'levelTag' : 'connections'
             ,'connectionURI' : uri
             ,'type' : type})

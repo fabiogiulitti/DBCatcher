@@ -12,11 +12,12 @@ from core.ActonTypeEnum import ActionTypeEnum
 @s
 class MongoDataResponse(AbstractDataResponse):
     _docs: list = ib()
+    _query: str = ib()
     _metaData: dict = ib()
 
     def toJson(self):
         text = dumps(self._docs, default=str, indent=4)
-        return ContentData(text, self._metaData)
+        return ContentData(text, None, self._metaData)
     
     def metadata(self):
         return self._metaData
@@ -81,4 +82,4 @@ def getDocuments(ctx: dict, curPage: int = 0, dimPage: int = 25):
     metaData = ctx.copy()
     metaData['cur_page'] = curPage
     metaData['last_page'] = lastPage
-    return MongoDataResponse(docs, metaData)
+    return MongoDataResponse(docs, None, metaData)

@@ -11,21 +11,21 @@ from core.driver.abstractdriver import AbstractTreeAction
 from psycopg2 import connect, extensions
 from attr import ib, s
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
-
+from textwrap import dedent
 
 @s
 class DataResponse(AbstractDataResponse):
     _cols: list = ib()
     _rows: list = ib()
+    _query: str = ib()
     _metaData: dict = ib()
-
 
     def toJson(self):
         result = list()
         for row in self._rows:
             result.append(dict(zip(self._cols, row)))
         text = dumps(result, default=str, indent=4)
-        return ContentData(text, self._metaData)
+        return ContentData(text, self._query, self._metaData)
     
     def toTabular(self):
         model = QStandardItemModel(len(self._rows), len(self._cols))
@@ -36,7 +36,7 @@ class DataResponse(AbstractDataResponse):
                 item = QStandardItem(str(self._rows[row][col]))
                 model.setItem(row, col, item)
 
-        return ContentDataModel(model, self._metaData)
+        return ContentDataModel(model, self._query, self._metaData)
     
     def metadata(self):
         return self._metaData
@@ -187,13 +187,13 @@ def getRows(ctx: dict, curPage: int = 0, dimPage: int = 25):
     lastPage = getTableCount(dimPage, schemaName, tabName, conn)
     
     cur = conn.cursor()
-    cur.execute(f"""
-            SELECT *
+    query = dedent(f"""SELECT *
             FROM {schemaName}.{tabName}
             offset {skip}
             limit {dimPage}
         """)
 
+    cur.execute(query)
     rows = cur.fetchall()
     cols = [desc[0] for desc in cur.description]
     cur.close()
@@ -201,7 +201,7 @@ def getRows(ctx: dict, curPage: int = 0, dimPage: int = 25):
     metaData = ctx.copy()
     metaData['cur_page'] = curPage
     metaData['last_page'] = lastPage
-    return DataResponse(cols, rows, metaData)
+    return DataResponse(cols, rows, query, metaData)
 
 
 def getTableCount(dimPage, schemaName, tabName, conn):

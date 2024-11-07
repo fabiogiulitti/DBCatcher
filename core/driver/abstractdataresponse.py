@@ -8,12 +8,15 @@ class AbstractDataResponse(ABC):
     def toJson(self) -> ContentData:
         pass
 
+#    @abstractmethod
     def toTabular(self):
-        pass
-
+        raise NotImplementedError("Unsupported method for this driver")
+    
+ #   @abstractmethod
     def toTree(self):
-        pass
+        raise NotImplementedError("Unsupported method for this driver")
 
+#    @abstractmethod
     def metadata(self):
         pass
 
