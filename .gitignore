@@ -1,7 +1,7 @@
 lib/
 include/
 scripts/
-__*
+__pycache__/
 share/
 .vscode/
 config/config.yaml
