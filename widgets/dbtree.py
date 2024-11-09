@@ -34,7 +34,8 @@ class DbTree(QTreeView):
             ctx = data[257].copy()
             ctx['action_type'] = ActionTypeEnum.CLICK
             response: AbstractDataResponse = executeTreeAction(ctx)
-            self._content.refreshContent(response)
+            if response is not None:
+                self._content.refreshContent(response)
         super().keyPressEvent(event)
         
 

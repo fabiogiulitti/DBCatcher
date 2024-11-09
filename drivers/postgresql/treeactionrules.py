@@ -187,11 +187,12 @@ def getRows(ctx: dict, curPage: int = 0, dimPage: int = 25):
     lastPage = getTableCount(dimPage, schemaName, tabName, conn)
     
     cur = conn.cursor()
-    query = dedent(f"""SELECT *
-            FROM {schemaName}.{tabName}
-            offset {skip}
-            limit {dimPage}
-        """)
+    query = dedent(f"""
+                   SELECT *
+                   FROM {schemaName}.{tabName}
+                   offset {skip}
+                   limit {dimPage}
+        """).lstrip()
 
     cur.execute(query)
     rows = cur.fetchall()
