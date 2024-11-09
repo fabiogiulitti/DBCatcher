@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QTreeView, QTextEdit, QWidget
-from PyQt6.QtCore import Qt, QModelIndex
+from PyQt6.QtCore import Qt, QModelIndex, QAbstractItemModel
 from core.driver.abstractdataresponse import AbstractDataResponse
 from widgets import contentWin
 from widgets.ContentData import ContentData
@@ -8,10 +8,11 @@ from core.manager import executeTreeAction
 from widgets.modelmanager import ModelManager
 from core.ActonTypeEnum import ActionTypeEnum
 from widgets.contentWin import ContentWin
+from PyQt6.QtGui import QKeyEvent, QStandardItemModel
 
 class DbTree(QTreeView):
 
-    def __init__(self, parent: QTreeView, content: ContentWin | None = ...) -> None:
+    def __init__(self, parent: QTreeView, content: ContentWin) -> None:
         super().__init__(parent)
         self.setAccessibleName("Connections")
         self.modelManager = ModelManager.createBaseModel()
@@ -22,15 +23,16 @@ class DbTree(QTreeView):
 
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self._content.refreshText("testo di prova")
+        if event.button() == Qt.MouseButton.LeftButton:
             event = None
         super().mousePressEvent(event)
     
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
             index = self.currentIndex()
-            data = index.model().itemData(index)
+            model = index.model()
+            assert model is not None
+            data = model.itemData(index)
             ctx = data[257].copy()
             ctx['action_type'] = ActionTypeEnum.CLICK
             response: AbstractDataResponse = executeTreeAction(ctx)

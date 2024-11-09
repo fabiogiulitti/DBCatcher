@@ -10,7 +10,7 @@ class ModelManager:
          self.model = None
 
     @staticmethod
-    def createBaseModel() -> QStandardItemModel:
+    def createBaseModel():
         model = QStandardItemModel()
         model.setHorizontalHeaderLabels(['Connections'])
         rootItem = model.invisibleRootItem()

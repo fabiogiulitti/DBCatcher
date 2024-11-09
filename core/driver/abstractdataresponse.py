@@ -18,5 +18,5 @@ class AbstractDataResponse(ABC):
 
 #    @abstractmethod
     def metadata(self):
-        pass
+        return dict()
 

@@ -26,7 +26,7 @@ class MainWindow(QMainWindow):
         self.setStatusBar(mainStatus)
         self.setTabOrder(dbTree, contentWin.contentTxt)
         self.setTabOrder(contentWin.contentTxt, contentWin.contentTab)
-        self.setTabOrder(contentWin.contentTab, contentWin.queryTxt)
+        self.setTabOrder(contentWin.contentTab, contentWin._queryTxt)
         
         self.show()
 

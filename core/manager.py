@@ -1,5 +1,6 @@
 from core.driver.dbdriver import AbstractDbDriver
 import core.driver.abstractdriver as car
+from core.driver import abstractdataresponse
 from drivers.mongodb import MongoDriver
 
 from core.treepath import drivers
@@ -18,7 +19,7 @@ def executeTreeNav(ctx: dict):
     return obj.executeNavAction(ctx['levelTag'], path[-1], ctx)
 
 
-def executeTreeAction(ctx: dict):
+def executeTreeAction(ctx: dict) -> abstractdataresponse.AbstractDataResponse:
     driver: AbstractDbDriver = drivers[ctx['type'].name]
     obj: car.AbstractTreeAction = driver.getObject(ObjectTypeEnum.DB_TREE)
     return obj.executeAction(ctx['levelTag'], ctx['action_type'], ctx)
