@@ -13,6 +13,7 @@ pyyml = "^0.0.2"
 pyqt6 = "^6.7.0"
 attrs = "^23.2.0"
 psycopg2 = "^2.9.9"
+pytest = "^8.3.3"
 
 
 [build-system]

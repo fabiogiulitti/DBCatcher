@@ -2,9 +2,9 @@
 
 from core.driver.dbdriver import AbstractDbDriver
 from core.ActonTypeEnum import ObjectTypeEnum
-from drivers.postgresql.contentactionrules import PSActionDef
-from drivers.postgresql.treeactionrules import PSTreeActions
-from drivers.postgresql.tabularactionrules import PSTabularActionDef
+from drivers.postgresql.postgresql.contentactionrules import PSActionDef
+from drivers.postgresql.postgresql.treeactionrules import PSTreeActions
+from drivers.postgresql.postgresql.tabularactionrules import PSTabularActionDef
 
 
 class PostgreSQLDriver(AbstractDbDriver):

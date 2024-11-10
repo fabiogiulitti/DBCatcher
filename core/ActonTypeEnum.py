@@ -10,6 +10,7 @@ class ActionTypeEnum(Enum):
     CLICK = 'click'
     NEXT_PAGE = 'next_page'
     PREVIOUS_PAGE = 'previous_page'
+    CTRL_ENTER = 'ctrl_enter'
 
 
 class ObjectTypeEnum(Enum):

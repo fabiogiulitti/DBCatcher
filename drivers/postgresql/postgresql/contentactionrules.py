@@ -2,9 +2,9 @@ from core.treepath import ContentAction
 from core.driver.abstractdriver import AbstractDriver
 from drivers.mongodb.treeactionrules import getDocuments
 from core.ActonTypeEnum import ActionTypeEnum
-from drivers.postgresql.treeactionrules import getRows
+from drivers.postgresql.postgresql.treeactionrules import getRows
 
-class PSTabularActionDef(AbstractDriver):
+class PSActionDef(AbstractDriver):
 
 
     def __init__(self) -> None:
