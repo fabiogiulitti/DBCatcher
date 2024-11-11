@@ -51,7 +51,6 @@ def ContentAction(action_type: ActionTypeEnum):
             result = func(self, param)
             return result;
 
-        print("before wrapper")
         setattr(wrapper, 'action_type', action_type)
         return wrapper
     return decorator

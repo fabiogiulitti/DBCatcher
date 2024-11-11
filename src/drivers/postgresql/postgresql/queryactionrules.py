@@ -1,9 +1,8 @@
 from core.treepath import ContentAction
-from core.treepath import ItemAction, TreePath,make_session_id, references
+from core.treepath import references
 from core.driver.abstractdriver import AbstractDriver
 from drivers.postgresql.postgresql.treeactionrules import DataResponse
 from core.ActonTypeEnum import ActionTypeEnum
-from drivers.postgresql.postgresql.treeactionrules import getRows
 
 class PSQueryActionDef(AbstractDriver):
 
@@ -29,6 +28,4 @@ class PSQueryActionDef(AbstractDriver):
         cur.close()
     
         metaData = ctx.copy()
-        #metaData['cur_page'] = curPage
-        #metaData['last_page'] = lastPage
         return DataResponse(cols, rows, query, metaData)

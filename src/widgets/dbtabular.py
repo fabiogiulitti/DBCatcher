@@ -10,15 +10,16 @@ from core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
 
 class DbTabular(QTableView):
 
-    def __init__(self, parent: QWidget, queryTxt: QTextEdit) -> None:
+    def __init__(self, parent: QWidget, queryTxt) -> None:
         super().__init__(parent)
-        self._queryTxt: QTextEdit = queryTxt
+        self._queryTxt = queryTxt
         self.setTabKeyNavigation(False)
 
     def refreshData(self, data):
         self.setModel(data.results)
         self._metaData = data.metaData
         self._queryTxt.setText(data.query)
+        self._queryTxt.setMetaData(data.metaData)
 
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_PageDown:

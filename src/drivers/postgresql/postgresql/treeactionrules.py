@@ -90,10 +90,8 @@ class PSTreeActions(AbstractTreeAction):
     @TreePath(node_type_in='databases', node_type_out='schemas')
     def retrieveSchemas(self, ctx: dict):
         id = ctx['sessionID']
-        print(id)
         connectionURI = references[id]['connection_uri']
         dsn = extensions.make_dsn(connectionURI, dbname = ctx['path'][0])
-        print(dsn)
         conn = connect(dsn)
 
         cur = conn.cursor()
