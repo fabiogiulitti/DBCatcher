@@ -16,14 +16,13 @@ class PSQueryActionDef(AbstractDriver):
         
 
     @ContentAction(action_type=ActionTypeEnum.CTRL_ENTER)
-    def _executeQuery(self, ctx: dict, query: str):
+    def _executeQuery(self, ctx: dict):
         id = ctx['sessionID']
-        schemaName = ctx['path'][1]
-        tabName = ctx['path'][-1]
 
         conn = references[id]['client']
     
         cur = conn.cursor()
+        query = ctx['query']
         cur.execute(query)
         rows = cur.fetchall()
         cols = [desc[0] for desc in cur.description]
