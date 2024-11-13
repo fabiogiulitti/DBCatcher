@@ -14,4 +14,7 @@ connections:
 - name: "Localhost"
   type: PostgreSQL
   connectionURI: postgresql://testuser:testpassword@localhost:5432/postgres
-                
+- name: "peng-uat"
+  type: PostgreSQL
+  connectionURI: postgresql://postgres:!ObjectWay2024@postgresql.operation.novobanco-uat.objectway.com:5432/nb_perf
+
