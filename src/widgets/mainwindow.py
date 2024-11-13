@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
         mainSplit.setStretchFactor(1, 3)
         self.setCentralWidget(mainSplit)
         mainStatus = ContentStatus(self)
-        mainStatus.addWidget(QLabel("(fixet status label)"))
+        #mainStatus.addWidget(QLabel("(fixet status label)"))
         self.setStatusBar(mainStatus)
         self.setTabOrder(dbTree, contentWin.contentTxt)
         self.setTabOrder(contentWin.contentTxt, contentWin.contentTab)

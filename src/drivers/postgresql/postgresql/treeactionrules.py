@@ -34,6 +34,8 @@ class DataResponse(AbstractDataResponse):
         for row in range(len(self._rows)):
             for col in range(len(self._cols)):
                 item = QStandardItem(str(self._rows[row][col]))
+                item.setEditable(False)
+                item.setSelectable(True)
                 model.setItem(row, col, item)
 
         return ContentDataModel(model, self._query, self._metaData)

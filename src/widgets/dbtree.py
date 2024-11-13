@@ -12,7 +12,7 @@ from PyQt6.QtGui import QKeyEvent, QStandardItemModel
 
 class DbTree(QTreeView):
 
-    def __init__(self, parent: QTreeView, content: ContentWin) -> None:
+    def __init__(self, parent, content: ContentWin) -> None:
         super().__init__(parent)
         self.setAccessibleName("Connections")
         self.modelManager = ModelManager.createBaseModel()
