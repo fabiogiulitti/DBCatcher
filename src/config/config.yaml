@@ -8,7 +8,7 @@ connections:
   connectionURI: mongodb://10.64.8.50:27017/
 - name: "Bacco prod"
   type: MongoDB
-  connectionURI: mongodb://10.64.8.50:27017/
+  connectionURI: mongodb://mongouser:mongouser01@10.65.5.220:27017/admin?	retryWrites=false&connectTimeoutMS=10000&authSource=admin&authMechanism=SCRAM-SHA-1
   user: mongouser
   password: mongouser01
 - name: "Localhost"

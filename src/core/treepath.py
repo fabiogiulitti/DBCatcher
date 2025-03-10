@@ -1,5 +1,6 @@
 from uuid import uuid4
 from core.ActonTypeEnum import ActionTypeEnum
+from functools import wraps
 
 drivers = dict()
 references = dict()
@@ -13,6 +14,7 @@ class Node():
         
 def TreePath(node_type_in: str, node_type_out: str, holder_type: str = 'default'):
     def decorator(func):
+        @wraps(func)
         def wrapper(self, param: dict):
             result,id = func(self, param)
             node = Node(node_type_out, result,id)
