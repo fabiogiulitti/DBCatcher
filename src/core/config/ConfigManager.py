@@ -1,4 +1,3 @@
-from ast import List
 from core.config.configyaml import config as conf
 from core.config.model.connection import Connection
 

@@ -2,13 +2,13 @@
 
 from core.driver.dbdriver import AbstractDbDriver
 from core.ActonTypeEnum import ObjectTypeEnum
-from drivers.postgresql.postgresql.contentactionrules import PSActionDef
-from drivers.postgresql.postgresql.treeactionrules import PSTreeActions
-from drivers.postgresql.postgresql.tabularactionrules import PSTabularActionDef
-from drivers.postgresql.postgresql.queryactionrules import PSQueryActionDef
+from drivers.hive.hive.contentactionrules import PSActionDef
+from drivers.hive.hive.treeactionrules import PSTreeActions
+from drivers.hive.hive.tabularactionrules import PSTabularActionDef
+from drivers.hive.hive.queryactionrules import PSQueryActionDef
 
 
-class PostgreSQLDriver(AbstractDbDriver):
+class HiveSQLDriver(AbstractDbDriver):
 
 
     def __init__(self) -> None:

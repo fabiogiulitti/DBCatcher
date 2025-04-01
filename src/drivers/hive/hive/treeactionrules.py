@@ -1,7 +1,3 @@
-from ast import List
-from importlib import metadata
-import inspect
-from platform import node
 from core.ActonTypeEnum import ActionTypeEnum
 from core.driver.abstractdataresponse import AbstractDataResponse
 from core.treepath import ItemAction, TreePath,make_session_id, references
@@ -66,9 +62,14 @@ class PSTreeActions(AbstractTreeAction):
     @TreePath(node_type_in='connections', node_type_out='catalogs')
     def retrieveCatalogs(self, ctx: dict):
         id = make_session_id()
+        print("ctx: {ctx}")
         try:
-            conn = hive.connect(ctx['connectionURI'])
-            references[id] = {'connection_uri' : ctx['connectionURI']}
+            conn = hive.Connection(host=ctx['host'], port=ctx['port'])
+            references[id] = {
+                'client': conn,
+                'host' : ctx['host'],
+                'port': ctx['port']
+                }
 
             cursor = conn.cursor()
             cursor.execute("SHOW CATALOGS")
@@ -79,9 +80,8 @@ class PSTreeActions(AbstractTreeAction):
                 result.append(cat)
 
             cursor.close()
-            conn.close()
         except Exception as e:
-            print(f"Errore durante la connessione a Hive-Kyuubi: {e}")
+            print(f"Errore durante la connessione a Hive-Kyuubi: {ctx} {e}")
 
         return (result, id)
 
@@ -89,11 +89,12 @@ class PSTreeActions(AbstractTreeAction):
     @TreePath(node_type_in='catalogs', node_type_out='databases')
     def retrieveDatabases(self, ctx: dict):
         id = ctx["sessionID"]
+        catalog = ctx['path'][-1]
         try:
             conn = references[id]['client']
     
             cursor = conn.cursor()
-            cursor.execute("SHOW DATABASES")
+            cursor.execute(f"SHOW DATABASES in {catalog}")
             databases = [row[0] for row in cursor.fetchall()]
 
             result = []
@@ -101,7 +102,7 @@ class PSTreeActions(AbstractTreeAction):
                 result.append(db)
 
             cursor.close()
-            conn.close()
+#            conn.close()
         except Exception as e:
             print(f"Errore durante la connessione a Hive-Kyuubi: {e}")
 
@@ -113,51 +114,50 @@ class PSTreeActions(AbstractTreeAction):
         return (['tables', 'views', 'indexes', 'procedures'],ctx['sessionID'])
 
 
-    @TreePath(node_type_in='schema_obj_hold', node_type_out='tables')
+    @TreePath(node_type_in='database_obj_hold', node_type_out='tables')
     def retrieveTables(self, ctx: dict):
         return self.retrieveDbObjects(ctx, 'tables')
 
-    @TreePath(node_type_in='schema_obj_hold', node_type_out='views')
-    def retrieveViews(self, ctx: dict):
-        return self.retrieveDbObjects(ctx, 'views')
+#    @TreePath(node_type_in='database_obj_hold', node_type_out='views')
+#    def retrieveViews(self, ctx: dict):
+#        return self.retrieveDbObjects(ctx, 'tables')
     
     def retrieveDbObjects(self, ctx, objType):
         id = ctx['sessionID']
         database = ctx['path'][-2]
-        
-        conn = references[id]['client']
-        cur = conn.cursor()
-        cur.execute(f"""
-            SHOW {objType} IN {database}
-        """)
 
-        tables = cur.fetchall()
-        result = map(lambda n: n[0], tables)
+        conn = references[id]['client']
+        try:
+            cur = conn.cursor()
+            cur.execute(f"""
+                SHOW {objType} IN {database}
+            """)
+            tables = cur.fetchall()
+
+            result = list(map(lambda r: r[1], tables))
+        except Exception as e:
+            print(f"Errore durante la connessione a Hive-Kyuubi: {e}")
 
         return (result, id)
     
 
     @TreePath(node_type_in='tables', node_type_out='tables_obj_hold')
     def retrieveTabHolding(self, ctx: dict):
-        return (['columns','indexes'],ctx['sessionID'])
+        return (['columns'],ctx['sessionID'])
 
 
-#    @TreePath(node_type_in='tables_obj_hold', node_type_out='columns', holder_type='columns')
+    @TreePath(node_type_in='tables_obj_hold', node_type_out='columns', holder_type='columns')
     def retrieveColumns(self, ctx: dict):
-        objType = getattr(self.retrieveColumns, 'holder_type')
         id = ctx['sessionID']
+        databaseName = ctx['path'][-4]
         tableName = ctx['path'][-2]
         
         conn = references[id]['client']
         cur = conn.cursor()
-        cur.execute(f"""
-            SELECT column_name, data_type, character_maximum_length
-            FROM information_schema.columns
-                    where table_name = '{tableName}'
-        """)
+        cur.execute(f"describe {databaseName}.{tableName}")
 
         columns = cur.fetchall()
-        result = map(lambda n: f"{n[0]} {n[1]} {n[2]}", columns)
+        result = list(map(lambda n: f"{n[0]} {n[1]} {n[2]}", columns))
 
         return (result, id)
     
@@ -171,21 +171,20 @@ class PSTreeActions(AbstractTreeAction):
         return getRows(ctx)
 
 
-def getRows(ctx: dict, curPage: int = 0, dimPage: int = 25):
+def getRows(ctx: dict, curPage: int = 0, dimPage: int = 50):
     id = ctx['sessionID']
-    schemaName = ctx['path'][1]
+    databaseName = ctx['path'][1]
     tabName = ctx['path'][-1]
 
     conn = references[id]['client']
     skip = curPage * dimPage
 
-    lastPage = getTableCount(dimPage, schemaName, tabName, conn)
+    lastPage = getTableCount(dimPage, databaseName, tabName, conn)
     
     cur = conn.cursor()
     query = dedent(f"""
                    SELECT *
-                   FROM {schemaName}.{tabName}
-                   offset {skip}
+                   FROM {databaseName}.{tabName}
                    limit {dimPage}
         """).lstrip()
 
@@ -200,11 +199,11 @@ def getRows(ctx: dict, curPage: int = 0, dimPage: int = 25):
     return DataResponse(cols, rows, query, metaData)
 
 
-def getTableCount(dimPage, schemaName, tabName, conn):
+def getTableCount(dimPage, databaseName, tabName, conn):
     cur = conn.cursor()
     cur.execute(f"""
                 select count(*) as numRecords
-                from {schemaName}.{tabName}
+                from {databaseName}.{tabName}
             """)
     numRows = cur.fetchone()[0]
     lastPage = numRows / dimPage - 1

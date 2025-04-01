@@ -1,8 +1,9 @@
 from core.treepath import ContentAction
 from core.treepath import references
 from core.driver.abstractdriver import AbstractDriver
-from drivers.postgresql.postgresql.treeactionrules import DataResponse
+from drivers.hive.hive.treeactionrules import DataResponse
 from core.ActonTypeEnum import ActionTypeEnum
+from pyhive import hive
 
 class PSQueryActionDef(AbstractDriver):
 
@@ -15,7 +16,7 @@ class PSQueryActionDef(AbstractDriver):
         
 
     @ContentAction(action_type=ActionTypeEnum.CTRL_ENTER)
-    def _executeQuery(self, ctx: dict):
+    def executeQuery(self, ctx: dict):
         id = ctx['sessionID']
 
         conn = references[id]['client']

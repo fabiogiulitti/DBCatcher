@@ -25,6 +25,7 @@ class DriverTypeEnum(Enum):
     POSTGRESQL = ('PostgreSQL', ViewTypeEnum.TABULAR)
     ORACLE = ('Oracle', ViewTypeEnum.TABULAR)
     MYSQL = ('MySql', ViewTypeEnum.TABULAR)
+    HIVE = ('Hive/Kyuubi', ViewTypeEnum.TABULAR)
 
     def __init__(self, label, view) -> None:
         self.label = label
