@@ -1,0 +1,5 @@
+
+connections:
+- name: <CONNECTION_NAME>
+  type: <DRIVER_TYPE>
+  connectionURI: <URI>

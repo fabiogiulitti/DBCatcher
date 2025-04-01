@@ -1,16 +1,19 @@
 from core.driver.dbdriver import AbstractDbDriver
 import core.driver.abstractdriver as car
 from core.driver import abstractdataresponse
+from drivers.hive import HiveSQLDriver
 from drivers.mongodb import MongoDriver
 
 from core.treepath import drivers
 from core.ActonTypeEnum import ActionTypeEnum, DriverTypeEnum, ObjectTypeEnum
 from drivers.postgresql import PostgreSQLDriver
 
-psd = PostgreSQLDriver()
+psd = HiveSQLDriver()
 drivers[DriverTypeEnum.POSTGRESQL.name] = psd
 inst = MongoDriver()
 drivers[DriverTypeEnum.MONGODB.name] = inst
+hvd = HiveSQLDriver()
+drivers[DriverTypeEnum.HIVE.name] = hvd
 
 def executeTreeNav(ctx: dict):
     driver: AbstractDbDriver = drivers[ctx['type'].name]

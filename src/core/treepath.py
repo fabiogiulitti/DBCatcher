@@ -37,6 +37,7 @@ def make_session_id():
 
 def ItemAction(node_type_in: str, action_type: ActionTypeEnum):
     def decorator(func):
+        @wraps(func)
         def wrapper(self, param: dict):
             result = func(self, param)
             return result;
@@ -49,6 +50,7 @@ def ItemAction(node_type_in: str, action_type: ActionTypeEnum):
 
 def ContentAction(action_type: ActionTypeEnum):
     def decorator(func):
+        @wraps(func)
         def wrapper(self, param: dict):
             result = func(self, param)
             return result;

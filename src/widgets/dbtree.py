@@ -1,14 +1,11 @@
-from PyQt6.QtWidgets import QTreeView, QTextEdit, QWidget
-from PyQt6.QtCore import Qt, QModelIndex, QAbstractItemModel
+from PyQt6.QtWidgets import QTreeView
+from PyQt6.QtCore import Qt, QModelIndex
 from core.driver.abstractdataresponse import AbstractDataResponse
-from widgets import contentWin
-from widgets.ContentData import ContentData
-from widgets.dbcontent import DbContent
 from core.manager import executeTreeAction
 from widgets.modelmanager import ModelManager
 from core.ActonTypeEnum import ActionTypeEnum
 from widgets.contentWin import ContentWin
-from PyQt6.QtGui import QKeyEvent, QStandardItemModel
+from PyQt6.QtGui import QKeyEvent
 
 class DbTree(QTreeView):
 
@@ -18,6 +15,7 @@ class DbTree(QTreeView):
         self.modelManager = ModelManager.createBaseModel()
         self.setModel(self.modelManager.getModel())
         self.expanded.connect(self.on_item_expanded)
+        self.collapsed.connect(self.on_item_collapsed)
         self._content: ContentWin = content
         self.show()
 
@@ -43,3 +41,6 @@ class DbTree(QTreeView):
 
     def on_item_expanded(self, index: QModelIndex):
         self.modelManager.expandModel(index)
+
+    def on_item_collapsed(self, index: QModelIndex):
+        self.modelManager.collapseModel(index)

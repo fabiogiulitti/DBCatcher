@@ -5,7 +5,7 @@ description = ""
 authors = ["Fabio <fabio@stsk.it>"]
 license = "GPL3"
 readme = "README.md"
-
+packages = [{ include = "divedb", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.12"
 pymongo = "3.12"
@@ -14,8 +14,12 @@ pyqt6 = "^6.7.0"
 attrs = "^23.2.0"
 psycopg2 = "^2.9.9"
 pytest = "^8.3.3"
-pyhive = "^0.7.0"
 thrift = "^0.21.0"
+wheel = "^0.45.1"
+requests = "^2.32.3"
+pytest-docker = "^3.2.0"
+pyhive = "^0.7.0"
+thrift-sasl = "^0.4.3"
 
 
 [build-system]

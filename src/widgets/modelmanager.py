@@ -1,3 +1,4 @@
+from typing import Optional
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 from core.manager import executeTreeNav
 from core.treepath import Node
@@ -13,7 +14,7 @@ class ModelManager:
     def createBaseModel():
         model = QStandardItemModel()
         model.setHorizontalHeaderLabels(['Connections'])
-        rootItem = model.invisibleRootItem()
+        rootItem: QStandardItem = model.invisibleRootItem()
         rootItem.appendRows(addConnections())
         manager = ModelManager()
         manager.model = model
@@ -29,6 +30,9 @@ class ModelManager:
         node: Node = executeTreeNav(data[257])
         addNodes(item,node)
 
+    def collapseModel(self, index):
+        item: QStandardItem = self.model.itemFromIndex(index)
+        item.removeRows(0, item.rowCount() - 1)
         
 def addNodes(parent: QStandardItem, node: Node):
         parent.removeRow(0)
@@ -41,9 +45,13 @@ def addConnections():
             name = connection.name
             type = connection.type
             uri = connection.connectionURI
+            host = connection.host
+            port = connection.port
             connectionItem = QStandardItem(f"{name} -> {type.name}")
             connectionItem.setData({'levelTag' : 'connections'
             ,'connectionURI' : uri
+            ,'host' : host
+            ,'port' : port
             ,'type' : type})
             connectionItem.appendRow(QStandardItem('(LOADING)'))
             connectionItems.append(connectionItem)
