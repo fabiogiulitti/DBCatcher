@@ -17,7 +17,7 @@ class MongoDataResponse(AbstractDataResponse):
 
     def toJson(self):
         text = dumps(self._docs, default=str, indent=4)
-        return ContentData(text, None, self._metaData)
+        return ContentData(text, self._query, self._metaData)
     
     def metadata(self):
         return self._metaData
@@ -68,6 +68,8 @@ def getDocuments(ctx: dict, curPage: int = 0, dimPage: int = 25):
     id = ctx['sessionID']
     dbName = ctx['path'][0]
     colName = ctx['path'][2]
+    query = f"db.{colName}.find()"
+
     db = references[id][dbName]
     col: Collection = db[colName]
 
@@ -82,4 +84,4 @@ def getDocuments(ctx: dict, curPage: int = 0, dimPage: int = 25):
     metaData = ctx.copy()
     metaData['cur_page'] = curPage
     metaData['last_page'] = lastPage
-    return MongoDataResponse(docs, None, metaData)
+    return MongoDataResponse(docs, query, metaData)

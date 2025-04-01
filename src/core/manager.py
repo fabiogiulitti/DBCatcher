@@ -5,10 +5,10 @@ from drivers.hive import HiveSQLDriver
 from drivers.mongodb import MongoDriver
 
 from core.treepath import drivers
-from core.ActonTypeEnum import ActionTypeEnum, DriverTypeEnum, ObjectTypeEnum
+from core.ActonTypeEnum import DriverTypeEnum, ObjectTypeEnum
 from drivers.postgresql import PostgreSQLDriver
 
-psd = HiveSQLDriver()
+psd = PostgreSQLDriver()
 drivers[DriverTypeEnum.POSTGRESQL.name] = psd
 inst = MongoDriver()
 drivers[DriverTypeEnum.MONGODB.name] = inst

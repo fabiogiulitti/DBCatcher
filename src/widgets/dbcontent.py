@@ -8,8 +8,9 @@ from widgets.ContentData import ContentData
 from core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
 
 class DbContent(QTextEdit):
-    def __init__(self,parent):
+    def __init__(self, parent, queryTxt):
         super().__init__(parent)
+        self._queryTxt = queryTxt
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setAccessibleDescription("Content view")
         self.setAccessibleName("Content view box")
@@ -25,6 +26,9 @@ class DbContent(QTextEdit):
     def refreshData(self, data: ContentData):
         self.metaData = data.metaData
         self.refreshText(data.results)
+        print(data.query)
+        self._queryTxt.setText(data.query)
+        self._queryTxt.setMetaData(data.metaData)
 
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_PageDown:

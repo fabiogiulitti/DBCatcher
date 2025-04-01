@@ -26,7 +26,7 @@ class ContentWin(QWidget):
         cntLayout.addWidget(QLabel("Query"))
         cntLayout.addWidget(self._queryTxt)
 
-        self.contentTxt = DbContent(self)
+        self.contentTxt = DbContent(self, self._queryTxt)
         self.contentTxt.setVisible(False)
         self.contentTab = DbTabular(self, self._queryTxt)
         self.contentTab.setVisible(False)
