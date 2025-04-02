@@ -1,6 +1,6 @@
 from json import dumps
 from pickle import TRUE
-from PyQt6.QtWidgets import QTextEdit, QSizePolicy, QWidget, QVBoxLayout, QSpacerItem, QLabel
+from PyQt6.QtWidgets import QTextEdit, QSizePolicy, QWidget, QVBoxLayout, QSpacerItem, QLabel, QMessageBox
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 from core.driver.abstractdataresponse import AbstractDataResponse
@@ -41,15 +41,18 @@ class ContentWin(QWidget):
     def refreshContent(self, response: AbstractDataResponse):
         metadata: dict = response.metadata()
         type: DriverTypeEnum = metadata['type']
-        if type.view == ViewTypeEnum.JSON:
-            data = response.toJson()
-            self.contentTxt.refreshData(data)
-            self.contentTab.setVisible(False)
-            self.contentTxt.setVisible(True)
-        elif type.view == ViewTypeEnum.TABULAR:
-            data = response.toTabular()
-            self.contentTab.refreshData(data)
-            self.contentTxt.setVisible(False)
-            self.contentTab.setVisible(True)
+        try:
+            if type.view == ViewTypeEnum.JSON:
+                data = response.toJson()
+                self.contentTxt.refreshData(data)
+                self.contentTab.setVisible(False)
+                self.contentTxt.setVisible(True)
+            elif type.view == ViewTypeEnum.TABULAR:
+                data = response.toTabular()
+                self.contentTab.refreshData(data)
+                self.contentTxt.setVisible(False)
+                self.contentTab.setVisible(True)
 
-        self.setVisible(True)
+            self.setVisible(True)
+        except Exception as e:
+            QMessageBox.information(self, "Error", str(e))

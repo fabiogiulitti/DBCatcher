@@ -1,5 +1,5 @@
 from json import dumps
-from PyQt6.QtWidgets import QTextEdit, QSizePolicy
+from PyQt6.QtWidgets import QTextEdit, QSizePolicy, QMessageBox
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 from core.driver.abstractdataresponse import AbstractDataResponse
@@ -26,25 +26,27 @@ class DbContent(QTextEdit):
     def refreshData(self, data: ContentData):
         self.metaData = data.metaData
         self.refreshText(data.results)
-        print(data.query)
         self._queryTxt.setText(data.query)
         self._queryTxt.setMetaData(data.metaData)
 
     def keyPressEvent(self, event):
-        if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_PageDown:
-            ctx = self.metaData
-            ctx['action_type'] = ActionTypeEnum.NEXT_PAGE
-            ctx['action_obj'] = ObjectTypeEnum.TEXT_AREA
-            response: AbstractDataResponse = executeCntAction(ctx)
-            if response is not None:
-                result: ContentData = response.toJson()
-                self.refreshData(result)
-        elif event.modifiers() == Qt.KeyboardModifier.ControlModifier and  event.key() == Qt.Key.Key_PageUp:
-            ctx = self.metaData
-            ctx['action_type'] = ActionTypeEnum.PREVIOUS_PAGE
-            ctx['action_obj'] = ObjectTypeEnum.TEXT_AREA
-            response: AbstractDataResponse = executeCntAction(ctx)
-            if response != None:
-                result: ContentData = response.toJson()
-                self.refreshData(result)
+        try:
+            if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_PageDown:
+                ctx = self.metaData
+                ctx['action_type'] = ActionTypeEnum.NEXT_PAGE
+                ctx['action_obj'] = ObjectTypeEnum.TEXT_AREA
+                response: AbstractDataResponse = executeCntAction(ctx)
+                if response is not None:
+                    result: ContentData = response.toJson()
+                    self.refreshData(result)
+            elif event.modifiers() == Qt.KeyboardModifier.ControlModifier and  event.key() == Qt.Key.Key_PageUp:
+                ctx = self.metaData
+                ctx['action_type'] = ActionTypeEnum.PREVIOUS_PAGE
+                ctx['action_obj'] = ObjectTypeEnum.TEXT_AREA
+                response: AbstractDataResponse = executeCntAction(ctx)
+                if response != None:
+                    result: ContentData = response.toJson()
+                    self.refreshData(result)
+        except Exception as e:
+            QMessageBox.information(self, "Error", str(e))
         super().keyPressEvent(event)

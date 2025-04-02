@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QTableView, QWidget
+from PyQt6.QtWidgets import QTableView, QWidget, QMessageBox
 from PyQt6.QtWidgets import QTextEdit, QSizePolicy
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
@@ -21,14 +21,18 @@ class QueryEdit(QTextEdit):
         self._metaData = metaData
 
     def keyPressEvent(self, event):
-        if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_Return:
-            ctx = self._metaData
-            ctx['action_type'] = ActionTypeEnum.CTRL_ENTER
-            ctx['action_obj'] = ObjectTypeEnum.QUERY_EDIT
-            ctx['query'] = self.toPlainText()
-            response: AbstractDataResponse = executeCntAction(ctx)
-            if response is not None:
-                self._parent.refreshContent(response)
+        try:
+            if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_Return:
+                ctx = self._metaData
+                ctx['action_type'] = ActionTypeEnum.CTRL_ENTER
+                ctx['action_obj'] = ObjectTypeEnum.QUERY_EDIT
+                ctx['query'] = self.toPlainText()
+                response: AbstractDataResponse = executeCntAction(ctx)
+                if response is not None:
+                    self._parent.refreshContent(response)
+        except Exception as e:
+            QMessageBox.information(self, "Error", str(e))
+
         super().keyPressEvent(event)
 
     
