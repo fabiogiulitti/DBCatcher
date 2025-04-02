@@ -4,11 +4,11 @@ from pyhive import hive
 
 from drivers.hive.hive.treeactionrules import DataResponse, PSTreeActions
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def docker_compose_file(pytestconfig):
     return str(pytestconfig.rootpath / "playground/hive/compose.yml")
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def web_service(docker_services):
 #    host = "kyuubi.novobancotools-uat.objectway.com"
     host = "localhost"
@@ -27,6 +27,7 @@ def web_service(docker_services):
         
     docker_services.wait_until_responsive(timeout=30.0, pause=1, check=lambda: is_hive_responsive() != False)
     yield True
+
 
 def test_web_service(web_service):
     ctx = dict()

@@ -7,7 +7,7 @@ license = "GPL3"
 readme = "README.md"
 packages = [{ include = "divedb", from = "src" }]
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 pymongo = "3.12"
 pyyml = "^0.0.2"
 pyqt6 = "^6.7.0"

@@ -45,7 +45,7 @@ class TreeActions(AbstractTreeAction):
 
     @TreePath(node_type_in='databases', node_type_out='collections_holder')
     def retrieveCollectionsHolding(self, ctx: dict):
-        return (['collections'],ctx['sessionID'])
+        return ([ 'collections', 'indexes' ],ctx['sessionID'])
 
 
     @TreePath(node_type_in='collections_holder', node_type_out='collections')
@@ -73,7 +73,7 @@ def getDocuments(ctx: dict, curPage: int = 0, dimPage: int = 25):
     db = references[id][dbName]
     col: Collection = db[colName]
 
-    numDocs = col.count()
+    numDocs = col.estimated_document_count()
     skip = curPage * dimPage
     lastPage = numDocs / dimPage - 1
 
