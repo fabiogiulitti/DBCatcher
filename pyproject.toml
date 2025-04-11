@@ -5,7 +5,7 @@ description = ""
 authors = ["Fabio <fabio@stsk.it>"]
 license = "GPL3"
 readme = "README.md"
-packages = [{ include = "divedb", from = "src" }]
+packages = [{ from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.12"
 pymongo = "3.12"
