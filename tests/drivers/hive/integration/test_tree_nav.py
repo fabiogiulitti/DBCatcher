@@ -2,7 +2,7 @@ import pytest
 import pytest_docker
 from pyhive import hive
 
-from drivers.hive.hive.treeactionrules import DataResponse, PSTreeActions
+from hive.treeactionrules import DataResponse, PSTreeActions
 
 @pytest.fixture(scope="session")
 def docker_compose_file(pytestconfig):
