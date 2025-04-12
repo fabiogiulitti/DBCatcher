@@ -39,4 +39,4 @@ jobs:
     - name: Test with pytest
       run: |
         eval $(poetry env activate)
-        pytest  
+        pytest --container-scope module
