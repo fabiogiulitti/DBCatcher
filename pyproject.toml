@@ -5,7 +5,12 @@ description = ""
 authors = ["Fabio <fabio@stsk.it>"]
 license = "GPL3"
 readme = "README.md"
-packages = [{ include = "main", from = "src" }]
+packages = [
+    { include = "main", from = "src" },
+    { include = "drivers/hive", from = "src" },
+	   { include = "drivers/mongodb", from = "src" },
+	   { include = "drivers/postgresql", from = "src" },
+]
 [tool.poetry.dependencies]
 python = "^3.11"
 pymongo = "3.12"
