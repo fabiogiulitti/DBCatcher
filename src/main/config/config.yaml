@@ -1,0 +1,17 @@
+
+connections:
+- name: "Bacco dev"
+  type: MongoDB
+  connectionURI: mongodb://10.64.8.50:27017/
+- name: "Bacco revolution"
+  type: MongoDB
+  connectionURI: mongodb://10.64.8.47:27017/
+- name: "Bacco prod"
+  type: MongoDB
+  connectionURI: mongodb://10.64.8.50:27017/
+  user: mongouser
+  password: mongouser01
+- name: "Localhost"
+  type: PostgreSQL
+  connectionURI: postgresql://testuser:testpassword@localhost:5432/postgres
+                

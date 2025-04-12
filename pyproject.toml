@@ -5,7 +5,7 @@ description = ""
 authors = ["Fabio <fabio@stsk.it>"]
 license = "GPL3"
 readme = "README.md"
-packages = [{ include = "divedb", from = "src" }]
+packages = [{ include = "main", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.11"
 pymongo = "3.12"
@@ -28,5 +28,5 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 pythonpath = [
-  "src"
+  "src/main"
 ]
