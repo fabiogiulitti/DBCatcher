@@ -1,11 +1,11 @@
-from core.driver.dbdriver import AbstractDbDriver
-import core.driver.abstractdriver as car
-from core.driver import abstractdataresponse
+from main.core.driver.dbdriver import AbstractDbDriver
+import main.core.driver.abstractdriver as car
+from main.core.driver import abstractdataresponse
 from drivers.hive import HiveSQLDriver
 from drivers.mongodb import MongoDriver
 
-from core.treepath import drivers
-from core.ActonTypeEnum import DriverTypeEnum, ObjectTypeEnum
+from main.core.treepath import drivers
+from main.core.ActonTypeEnum import DriverTypeEnum, ObjectTypeEnum
 from drivers.postgresql import PostgreSQLDriver
 
 psd = PostgreSQLDriver()

@@ -1,7 +1,16 @@
+from argparse import ArgumentParser
 import sys
 from PyQt6.QtWidgets import QApplication
-from widgets.mainwindow import MainWindow
 from drivers.mongodb.contentactionrules import MyDriver
+from main.widgets.mainwindow import MainWindow
+import main.cli_args as cli_args
+
+parser = ArgumentParser(description="Startup arguments")
+parser.add_argument('-c', '--configFile', help='Pass alternative config file')
+
+args = parser.parse_args()
+
+cli_args.config_file = args.configFile
 
 MyDriver()
 if __name__ == "__main__":

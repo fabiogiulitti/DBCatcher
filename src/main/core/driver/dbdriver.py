@@ -1,4 +1,4 @@
-from core.ActonTypeEnum import ObjectTypeEnum
+from main.core.ActonTypeEnum import ObjectTypeEnum
 
 
 class AbstractDbDriver:

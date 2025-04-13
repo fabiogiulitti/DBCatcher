@@ -1,11 +1,12 @@
 from ast import mod
+from typing import Optional
 from PyQt6.QtWidgets import QTableView, QWidget, QTextEdit, QSizePolicy, QAbstractItemView, QTableWidget, QMenu, QWidgetAction, QApplication
-from PyQt6.QtGui import QStandardItemModel, QStandardItem, QAction, QGuiApplication, QClipboard
+from PyQt6.QtGui import QStandardItemModel, QStandardItem, QAction, QGuiApplication
 from PyQt6.QtCore import Qt, QAbstractItemModel
-from core.driver.abstractdataresponse import AbstractDataResponse
-from core.manager import executeCntAction
-from widgets.ContentData import ContentData
-from core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
+from main.core.driver.abstractdataresponse import AbstractDataResponse
+from main.core.manager import executeCntAction
+from main.widgets.ContentData import ContentData
+from main.core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
 import csv
 import io
 import sys

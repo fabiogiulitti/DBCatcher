@@ -4,7 +4,7 @@ import time
 import pytest
 import psycopg2
 from drivers.hive.hive.treeactionrules import PSTreeActions
-from core.treepath import ItemAction, TreePath,make_session_id, references, Node
+from main.core.treepath import ItemAction, TreePath,make_session_id, references, Node
 from unittest.mock import MagicMock, patch
 
 @patch("drivers.hive.hive.treeactionrules.hive.Connection")  # Mock della connessione a Hive

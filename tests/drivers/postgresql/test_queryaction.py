@@ -3,7 +3,7 @@ import time
 import pytest
 import psycopg2
 import drivers.postgresql.postgresql.queryactionrules as qar
-from core.treepath import ItemAction, TreePath,make_session_id, references
+from main.core.treepath import ItemAction, TreePath,make_session_id, references
 
 @pytest.fixture(scope="module")
 def postgres_container():

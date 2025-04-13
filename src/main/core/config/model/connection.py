@@ -1,6 +1,6 @@
 from attr import dataclass
 
-from core.ActonTypeEnum import DriverTypeEnum
+from main.core.ActonTypeEnum import DriverTypeEnum
 
 
 #@dataclass
@@ -17,11 +17,11 @@ class Connection:
     def __init__(self, values: dict):
         self.name = values['name']
         self.type = DriverTypeEnum.fromLabel(values['type'])
-        self.connectionURI = values.get('connectionURI', None)
-        self.host = values.get('host', None)
-        self.port = values.get('port', None)
-        self.user = values.get("user", None)
-        self.password = values.get("password", None)
+        self.connectionURI = values.get('connectionURI', '')
+        self.host = values.get('host', '')
+        self.port = values.get('port', '')
+        self.user = values.get("user", '')
+        self.password = values.get("password", '')
 
         if (self.connectionURI is None and (self.host is None or self.port is None)):
             print("Invalid configuration {self}")

@@ -1,7 +1,7 @@
 # Package definition for PostgreSQL driver
 
-from core.driver.dbdriver import AbstractDbDriver
-from core.ActonTypeEnum import ObjectTypeEnum
+from main.core.driver.dbdriver import AbstractDbDriver
+from main.core.ActonTypeEnum import ObjectTypeEnum
 from drivers.postgresql.postgresql.contentactionrules import PSActionDef
 from drivers.postgresql.postgresql.treeactionrules import PSTreeActions
 from drivers.postgresql.postgresql.tabularactionrules import PSTabularActionDef

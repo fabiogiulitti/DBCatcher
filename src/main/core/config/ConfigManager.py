@@ -1,9 +1,13 @@
-from core.config.configyaml import config as conf
-from core.config.model.connection import Connection
+from main import cli_args
+from main.core.config.configyaml import ConfigManager
+from main.core.config.model.connection import Connection
+
 
 def retrieveConnections() -> list:
+    
+    config = ConfigManager(cli_args.config_file)
     try:
-        values = conf.get_value("connections")
+        values = config.get_value("connections")
         connections = []
         if isinstance(values, list):
             for value in values:

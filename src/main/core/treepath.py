@@ -1,5 +1,5 @@
 from uuid import uuid4
-from core.ActonTypeEnum import ActionTypeEnum
+from main.core.ActonTypeEnum import ActionTypeEnum
 from functools import wraps
 
 drivers = dict()

@@ -3,19 +3,19 @@ from pickle import TRUE
 from PyQt6.QtWidgets import QTextEdit, QSizePolicy, QWidget, QVBoxLayout, QSpacerItem, QLabel, QMessageBox
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
-from core.driver.abstractdataresponse import AbstractDataResponse
-from core.manager import executeCntAction
-from widgets import dbtabular
-from widgets import queryedit
-from widgets.ContentData import ContentData
-from core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
-from core.config.model.connection import DriverTypeEnum
-from widgets.dbcontent import DbContent
-from widgets.dbtabular import DbTabular
-from widgets.queryedit import QueryEdit
-from core.driver.abstractdataresponse import AbstractDataResponse
-from widgets.model import viewtypeenum
-from widgets.model.viewtypeenum import ViewTypeEnum
+from main.core.driver.abstractdataresponse import AbstractDataResponse
+from main.core.manager import executeCntAction
+from main.widgets import dbtabular
+from main.widgets import queryedit
+from main.widgets.ContentData import ContentData
+from main.core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
+from main.core.ActonTypeEnum import DriverTypeEnum
+from main.widgets.dbcontent import DbContent
+from main.widgets.dbtabular import DbTabular
+from main.widgets.queryedit import QueryEdit
+from main.core.driver.abstractdataresponse import AbstractDataResponse
+from main.widgets.model import viewtypeenum
+from main.widgets.model.viewtypeenum import ViewTypeEnum
 
 class ContentWin(QWidget):
     def __init__(self,parent):

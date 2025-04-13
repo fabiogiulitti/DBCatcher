@@ -1,6 +1,6 @@
-from core.treepath import ContentAction
-from core.driver.abstractdriver import AbstractDriver
-from core.ActonTypeEnum import ActionTypeEnum
+from main.core.treepath import ContentAction
+from main.core.driver.abstractdriver import AbstractDriver
+from main.core.ActonTypeEnum import ActionTypeEnum
 from drivers.postgresql.postgresql.treeactionrules import getRows
 
 class PSActionDef(AbstractDriver):

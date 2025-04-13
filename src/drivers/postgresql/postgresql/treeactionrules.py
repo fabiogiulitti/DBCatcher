@@ -2,12 +2,12 @@ from ast import List
 from importlib import metadata
 import inspect
 from platform import node
-from core.ActonTypeEnum import ActionTypeEnum
-from core.driver.abstractdataresponse import AbstractDataResponse
-from core.treepath import ItemAction, TreePath,make_session_id, references
+from main.core.ActonTypeEnum import ActionTypeEnum
+from main.core.driver.abstractdataresponse import AbstractDataResponse
+from main.core.treepath import ItemAction, TreePath,make_session_id, references
 from json import dumps
-from widgets.ContentData import ContentData, ContentDataModel
-from core.driver.abstractdriver import AbstractTreeAction
+from main.widgets.ContentData import ContentData, ContentDataModel
+from main.core.driver.abstractdriver import AbstractTreeAction
 from psycopg2 import connect, extensions
 from attr import ib, s
 from PyQt6.QtGui import QStandardItemModel, QStandardItem

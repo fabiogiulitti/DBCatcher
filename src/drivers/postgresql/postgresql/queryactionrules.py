@@ -1,8 +1,8 @@
-from core.treepath import ContentAction
-from core.treepath import references
-from core.driver.abstractdriver import AbstractDriver
+from main.core.treepath import ContentAction
+from main.core.treepath import references
+from main.core.driver.abstractdriver import AbstractDriver
 from drivers.postgresql.postgresql.treeactionrules import DataResponse
-from core.ActonTypeEnum import ActionTypeEnum
+from main.core.ActonTypeEnum import ActionTypeEnum
 
 class PSQueryActionDef(AbstractDriver):
 

@@ -1,5 +1,5 @@
 from abc import ABC,abstractmethod
-from widgets.ContentData import ContentData
+from main.widgets.ContentData import ContentData
 
 
 class AbstractDataResponse(ABC):

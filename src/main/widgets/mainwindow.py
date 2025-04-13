@@ -1,20 +1,20 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSplitter, QMainWindow, QLabel, QSpacerItem, QSizePolicy
 from PyQt6.QtGui import QPainter
 from PyQt6.QtCore import  Qt
-from widgets.dbcontent import DbContent, QTextEdit
-import widgets.dbtree as dbtree
-from widgets.statusbar import ContentStatus
-from widgets.contentWin import ContentWin
+from main.widgets.dbcontent import DbContent, QTextEdit
+from main.widgets.dbtree import DbTree
+from main.widgets.statusbar import ContentStatus
+from main.widgets.contentWin import ContentWin
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Dive into db')
+        self.setWindowTitle('D B Catcher')
 
         self.setGeometry(300, 200, 800, 600)
         
         contentWin = ContentWin(self)
-        dbTree = dbtree.DbTree(self, contentWin)
+        dbTree = DbTree(self, contentWin)
         mainSplit = QSplitter(Qt.Orientation.Horizontal)
         mainSplit.addWidget(dbTree)
         mainSplit.addWidget(contentWin)

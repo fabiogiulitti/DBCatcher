@@ -1,7 +1,7 @@
 # Package definition for hive/kyuubi driver
 
-from core.driver.dbdriver import AbstractDbDriver
-from core.ActonTypeEnum import ObjectTypeEnum
+from main.core.driver.dbdriver import AbstractDbDriver
+from main.core.ActonTypeEnum import ObjectTypeEnum
 from drivers.hive.hive.contentactionrules import PSActionDef
 from drivers.hive.hive.treeactionrules import PSTreeActions
 from drivers.hive.hive.tabularactionrules import PSTabularActionDef

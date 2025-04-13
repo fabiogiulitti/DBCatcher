@@ -1,5 +1,5 @@
 from PyQt6.QtGui import QStandardItem
-from core.treepath import Node
+from main.core.treepath import Node
 
 
 def createItem(parentData: dict, text: str, node: Node) -> QStandardItem:

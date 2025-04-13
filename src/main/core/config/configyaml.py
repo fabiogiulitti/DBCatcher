@@ -1,8 +1,11 @@
 import yaml
 
 class ConfigManager:
-    def __init__(self):
-        self.config_file = "config/config.yaml"
+    def __init__(self, config_file):
+        if config_file is not None:
+            self.config_file = config_file
+        else:
+            self.config_file = "src/config/config.yaml"
         self.config = self.load_config()
 
     def load_config(self):
@@ -30,5 +33,3 @@ class ConfigManager:
                 yaml.dump(self.config, file, default_flow_style=False)
         except yaml.YAMLError as e:
             print(f"Errore nel salvataggio del file YAML: {e}")
-
-config = ConfigManager()

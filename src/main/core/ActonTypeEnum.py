@@ -1,8 +1,8 @@
 from cProfile import label
 from enum import Enum
 
-from widgets.model import viewtypeenum
-from widgets.model.viewtypeenum import ViewTypeEnum
+from main.widgets.model import viewtypeenum
+from main.widgets.model.viewtypeenum import ViewTypeEnum
 
 
 class ActionTypeEnum(Enum):

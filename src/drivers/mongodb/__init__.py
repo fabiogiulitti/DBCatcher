@@ -1,7 +1,7 @@
 # Package definition for MongoDb driver
 
-from core.driver.dbdriver import AbstractDbDriver
-from core.ActonTypeEnum import ObjectTypeEnum
+from main.core.driver.dbdriver import AbstractDbDriver
+from main.core.ActonTypeEnum import ObjectTypeEnum
 from drivers.mongodb.contentactionrules import MyDriver
 from drivers.mongodb.queryactionrules import MongoQueryActionDef
 from drivers.mongodb.treeactionrules import TreeActions

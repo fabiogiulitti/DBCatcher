@@ -4,11 +4,11 @@ from typing import Collection
 
 import pymongo
 import pymongo.cursor
-from core.treepath import ContentAction
-from core.treepath import references
-from core.driver.abstractdriver import AbstractDriver
+from main.core.treepath import ContentAction
+from main.core.treepath import references
+from main.core.driver.abstractdriver import AbstractDriver
 from drivers.mongodb.treeactionrules import MongoDataResponse
-from core.ActonTypeEnum import ActionTypeEnum
+from main.core.ActonTypeEnum import ActionTypeEnum
 from pymongo.collection import Collection
 
 from drivers.mongodb.util.query_parser import QueryParser

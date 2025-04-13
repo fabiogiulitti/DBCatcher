@@ -1,9 +1,9 @@
 from typing import Optional
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
-from core.manager import executeTreeNav
-from core.treepath import Node
-from core.config.ConfigManager import retrieveConnections
-from widgets.utils import createItem
+from main.core.manager import executeTreeNav
+from main.core.treepath import Node
+from main.core.config.ConfigManager import retrieveConnections
+from main.widgets.utils import createItem
 
 class ModelManager:
 

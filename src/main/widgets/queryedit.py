@@ -2,11 +2,10 @@ from PyQt6.QtWidgets import QTableView, QWidget, QMessageBox
 from PyQt6.QtWidgets import QTextEdit, QSizePolicy
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
-from core.driver.abstractdataresponse import AbstractDataResponse
-from core.manager import executeCntAction
-from widgets.ContentData import ContentData
-#from widgets.contentWin import ContentWin
-from core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
+from main.core.driver.abstractdataresponse import AbstractDataResponse
+from main.core.manager import executeCntAction
+from main.widgets.ContentData import ContentData
+from main.core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
 
 class QueryEdit(QTextEdit):
 

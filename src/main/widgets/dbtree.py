@@ -2,11 +2,11 @@ from sys import exception
 from tkinter import E
 from PyQt6.QtWidgets import QTreeView, QMessageBox
 from PyQt6.QtCore import Qt, QModelIndex
-from core.driver.abstractdataresponse import AbstractDataResponse
-from core.manager import executeTreeAction
-from widgets.modelmanager import ModelManager
-from core.ActonTypeEnum import ActionTypeEnum
-from widgets.contentWin import ContentWin
+from main.core.driver.abstractdataresponse import AbstractDataResponse
+from main.core.manager import executeTreeAction
+from main.widgets.modelmanager import ModelManager
+from main.core.ActonTypeEnum import ActionTypeEnum
+from main.widgets.contentWin import ContentWin
 from PyQt6.QtGui import QKeyEvent
 
 class DbTree(QTreeView):

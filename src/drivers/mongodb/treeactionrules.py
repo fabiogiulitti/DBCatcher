@@ -1,13 +1,13 @@
 from attr import ib, s
-from core.driver.abstractdataresponse import AbstractDataResponse
-from core.treepath import TreePath,make_session_id, references
-from core.treepath import ItemAction
+from main.core.driver.abstractdataresponse import AbstractDataResponse
+from main.core.treepath import TreePath,make_session_id, references
+from main.core.treepath import ItemAction
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from json import dumps
-from widgets.ContentData import ContentData
-from core.driver.abstractdriver import AbstractTreeAction
-from core.ActonTypeEnum import ActionTypeEnum
+from main.widgets.ContentData import ContentData
+from main.core.driver.abstractdriver import AbstractTreeAction
+from main.core.ActonTypeEnum import ActionTypeEnum
 
 @s
 class MongoDataResponse(AbstractDataResponse):

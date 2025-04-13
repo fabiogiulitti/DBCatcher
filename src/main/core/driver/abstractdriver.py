@@ -1,5 +1,5 @@
 from itertools import count
-from core.ActonTypeEnum import ActionTypeEnum
+from main.core.ActonTypeEnum import ActionTypeEnum
 
 
 class AbstractDriver:
