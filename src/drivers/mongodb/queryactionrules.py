@@ -1,6 +1,7 @@
 import re
 import json
-from typing import Collection
+from textwrap import dedent
+from typing import Collection, Iterable
 
 import pymongo
 import pymongo.cursor
@@ -29,24 +30,37 @@ class MongoQueryActionDef(AbstractDriver):
         dbName = ctx['path'][0]
         colName = ctx['path'][2]
         db = references[id][dbName]
-
-        query: str = ctx['query']
+        
+        query: str = dedent(ctx['query']).strip()
+        print(query)
         parser = QueryParser()
         query_elements = parser.parse(query)
-#        query_elements = query.split('.')
         
         col: Collection = db[query_elements[0]]
-
+        col.aggregate
         method = getattr(col, query_elements[1][0][0])
-        cursor: pymongo.cursor.Cursor = method(*query_elements[1][0][1])
+        if "aggregate" == query_elements[1][0][0]:
+            cursor: pymongo.cursor.Cursor = method(query_elements[1][0][1])
+        else:
+            cursor: pymongo.cursor.Cursor = method(*query_elements[1][0][1])
+
+        is_limited = False
         for element in query_elements[1][1:]:
+            if "limit" == element[0]:
+                is_limited = True
             method = getattr(cursor, element[0])
             cursor = method(element[1])
 
         docs = list()
-        for doc in cursor:
-            docs.append(doc)
- 
+        if isinstance(cursor, Iterable):
+            if not is_limited and "aggregate" != query_elements[1][0][0]:
+                cursor.limit(25)
+                query = query + ".limit(25)"
+            for doc in cursor:
+                docs.append(doc)
+        else:
+            docs.append({"countDocuments": cursor})
+
         metaData = ctx.copy()
 #        metaData['cur_page'] = curPage
 #        metaData['last_page'] = lastPage

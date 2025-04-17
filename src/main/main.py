@@ -5,8 +5,8 @@ from drivers.mongodb.contentactionrules import MyDriver
 from main.widgets.mainwindow import MainWindow
 import main.cli_args as cli_args
 
-parser = ArgumentParser(description="Startup arguments")
-parser.add_argument('-c', '--configFile', help='Pass alternative config file')
+parser = ArgumentParser()
+parser.add_argument('-c', '--configFile', help='Specify alternative config file path')
 
 args = parser.parse_args()
 

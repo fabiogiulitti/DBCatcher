@@ -17,7 +17,7 @@ class QueryParser():
     
     def __init__(self) -> None:
         self._col_regex = r"(db\.)?(\w+)(?=\.)"
-        self._func_regex = r"\.([a-z_]*)\((.*?)\)(?=\.|$)"
+        self._func_regex = r"(?s)\.([a-z_]*)\((.*?)\)(?=\.|$)"
 
     def parse(self, query: str) -> tuple:
         colName = ''
@@ -48,6 +48,12 @@ def convert_if_json(function):
     match function[0]:
         case "find":
             return json.loads(f"[{function[1]}]")
+        case "aggregate":
+            return json.loads(function[1])
+        case "count_documents":
+            return json.loads(f"[{function[1]}]")
+        case "estimated_document_count":
+            return ""
         case "sort":
             sortDict = json.loads(function[1])
             return tuple(sortDict.items())

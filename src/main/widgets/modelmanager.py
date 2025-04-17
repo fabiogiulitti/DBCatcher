@@ -53,7 +53,7 @@ def addConnections():
             ,'host' : host
             ,'port' : port
             ,'type' : type})
-            connectionItem.appendRow(QStandardItem('(LOADING)'))
+            connectionItem.appendRow(QStandardItem('(LOADING...)'))
             connectionItems.append(connectionItem)
         return connectionItems
 

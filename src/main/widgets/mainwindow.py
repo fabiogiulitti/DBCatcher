@@ -13,8 +13,9 @@ class MainWindow(QMainWindow):
 
         self.setGeometry(300, 200, 800, 600)
         
-        contentWin = ContentWin(self)
-        dbTree = DbTree(self, contentWin)
+        
+        dbTree = DbTree(self)
+        contentWin = ContentWin(self, dbTree.custom_signals)
         mainSplit = QSplitter(Qt.Orientation.Horizontal)
         mainSplit.addWidget(dbTree)
         mainSplit.addWidget(contentWin)
