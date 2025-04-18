@@ -29,33 +29,18 @@ class MongoQueryActionDef(AbstractDriver):
         id = ctx['sessionID']
         dbName = ctx['path'][0]
         colName = ctx['path'][2]
+        
         db = references[id][dbName]
+        scope = {'cursor': None,
+                 'db': db}
         
         query: str = dedent(ctx['query']).strip()
-        print(query)
-        parser = QueryParser()
-        query_elements = parser.parse(query)
-        
-        col: Collection = db[query_elements[0]]
-        col.aggregate
-        method = getattr(col, query_elements[1][0][0])
-        if "aggregate" == query_elements[1][0][0]:
-            cursor: pymongo.cursor.Cursor = method(query_elements[1][0][1])
-        else:
-            cursor: pymongo.cursor.Cursor = method(*query_elements[1][0][1])
-
-        is_limited = False
-        for element in query_elements[1][1:]:
-            if "limit" == element[0]:
-                is_limited = True
-            method = getattr(cursor, element[0])
-            cursor = method(element[1])
-
+        #exec('cursor = ' + query)
+        exec(f"cursor = {query}", {}, scope)
+        cursor = scope['cursor']
+        print(cursor)
         docs = list()
         if isinstance(cursor, Iterable):
-            if not is_limited and "aggregate" != query_elements[1][0][0]:
-                cursor.limit(25)
-                query = query + ".limit(25)"
             for doc in cursor:
                 docs.append(doc)
         else:

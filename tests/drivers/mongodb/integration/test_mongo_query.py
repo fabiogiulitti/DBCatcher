@@ -36,7 +36,7 @@ def test_mongo_tree_navigation(mongo_service):
     ctx = dict()
     ctx['sessionID'] = id
     ctx['path'] = ['testdb', '', 'firstcollection']
-    ctx['query'] = 'db.firstcollection.find({},{"name": 1,"age": 1}).sort({"age": -1}).limit(2)'
+    ctx['query'] = 'db.firstcollection.find({},{"name": 1,"age": 1}).sort([("age", -1)]).limit(2)'
     db = mongo_service['testdb']
     references[id] = {'testdb' : db}
     
