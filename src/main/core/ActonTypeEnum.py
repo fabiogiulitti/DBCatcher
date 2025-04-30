@@ -21,15 +21,16 @@ class ObjectTypeEnum(Enum):
 
 
 class DriverTypeEnum(Enum):
-    MONGODB = ('MongoDB', ViewTypeEnum.JSON)
-    POSTGRESQL = ('PostgreSQL', ViewTypeEnum.TABULAR)
-    ORACLE = ('Oracle', ViewTypeEnum.TABULAR)
-    MYSQL = ('MySql', ViewTypeEnum.TABULAR)
-    HIVE = ('Hive/Kyuubi', ViewTypeEnum.TABULAR)
+    MONGODB = ('MongoDB', ViewTypeEnum.JSON, ViewTypeEnum.JSON.value | ViewTypeEnum.TREE.value)
+    POSTGRESQL = ('PostgreSQL', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value)
+    ORACLE = ('Oracle', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value)
+    MYSQL = ('MySql', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value)
+    HIVE = ('Hive/Kyuubi', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR)
 
-    def __init__(self, label, view) -> None:
+    def __init__(self, label, default_view, available_views) -> None:
         self.label = label
-        self.view: ViewTypeEnum = view
+        self.default_view: ViewTypeEnum = default_view
+        self.available_views = available_views
 
 
     @classmethod

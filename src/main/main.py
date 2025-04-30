@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 import sys
 from PyQt6.QtWidgets import QApplication
-from drivers.mongodb.contentactionrules import MyDriver
 from main.widgets.mainwindow import MainWindow
 import main.cli_args as cli_args
 
@@ -12,7 +11,7 @@ args = parser.parse_args()
 
 cli_args.config_file = args.configFile
 
-MyDriver()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setStyle("Fusion")

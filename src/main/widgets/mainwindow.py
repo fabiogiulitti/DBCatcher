@@ -1,7 +1,7 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSplitter, QMainWindow, QLabel, QSpacerItem, QSizePolicy
+from PyQt6.QtWidgets import QSplitter, QMainWindow
 from PyQt6.QtGui import QPainter
 from PyQt6.QtCore import  Qt
-from main.widgets.dbcontent import DbContent, QTextEdit
+from main.widgets import content_menu
 from main.widgets.dbtree import DbTree
 from main.widgets.statusbar import ContentStatus
 from main.widgets.contentWin import ContentWin
@@ -15,19 +15,19 @@ class MainWindow(QMainWindow):
         
         
         dbTree = DbTree(self)
-        contentWin = ContentWin(self, dbTree.custom_signals)
-        mainSplit = QSplitter(Qt.Orientation.Horizontal)
-        mainSplit.addWidget(dbTree)
-        mainSplit.addWidget(contentWin)
-        mainSplit.setStretchFactor(0, 1)
-        mainSplit.setStretchFactor(1, 3)
-        self.setCentralWidget(mainSplit)
+        content_win = ContentWin(self, dbTree.custom_signals)
+        main_split = QSplitter(Qt.Orientation.Horizontal)
+        main_split.addWidget(dbTree)
+        main_split.addWidget(content_win)
+        main_split.setStretchFactor(0, 1)
+        main_split.setStretchFactor(1, 3)
+        self.setCentralWidget(main_split)
+        self.setMenuBar(content_menu.ContentMenuBar(content_win))
         mainStatus = ContentStatus(self)
-        #mainStatus.addWidget(QLabel("(fixet status label)"))
         self.setStatusBar(mainStatus)
-        self.setTabOrder(dbTree, contentWin.contentTxt)
-        self.setTabOrder(contentWin.contentTxt, contentWin.contentTab)
-        self.setTabOrder(contentWin.contentTab, contentWin._queryTxt)
+        self.setTabOrder(dbTree, content_win.contentTxt)
+        self.setTabOrder(content_win.contentTxt, content_win.contentTab)
+        self.setTabOrder(content_win.contentTab, content_win._queryTxt)
         
         self.show()
 
