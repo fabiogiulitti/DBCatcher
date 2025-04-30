@@ -1,6 +1,6 @@
 from json import dumps
 from PyQt6.QtWidgets import QTextEdit, QSizePolicy, QMessageBox
-from PyQt6.QtGui import QStandardItemModel, QStandardItem
+from PyQt6.QtGui import QStandardItemModel, QStandardItem, QTextOption
 from PyQt6.QtCore import Qt
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.manager import executeCntAction
@@ -15,6 +15,7 @@ class DbContent(QTextEdit):
         self.setAccessibleDescription("Content view")
         self.setAccessibleName("Content view box")
         self.setTabChangesFocus(True)
+        self.setWordWrapMode(QTextOption.WrapMode.NoWrap)
         self.show()
 
 
