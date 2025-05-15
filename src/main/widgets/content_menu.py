@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import QMenu, QMenuBar
 from PyQt6.QtGui import QAction, QActionGroup
 
-from main.core.ActonTypeEnum import DriverTypeEnum
 from main.widgets import contentWin
 from main.widgets.model.viewtypeenum import ViewTypeEnum
 
