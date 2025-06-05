@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QMenu, QMenuBar
 from PyQt6.QtGui import QAction, QActionGroup
 
+from main.core.ActonTypeEnum import DriverTypeEnum
 from main.widgets import contentWin
 from main.widgets.model.viewtypeenum import ViewTypeEnum
 
@@ -40,6 +41,7 @@ class ContentMenuBar(QMenuBar):
         self.help_menu = self.addMenu("?")
 
         self.presentation_menu.aboutToShow.connect(self.about_to_show)
+        action_group.triggered.connect(self.actionTriggered)
 
     def about_to_show(self):
         if self._content_win.driver_type is not None:
@@ -49,12 +51,12 @@ class ContentMenuBar(QMenuBar):
             self.json_action.setEnabled(self.json_action.property("view_mask") & available_views)
 
             if not (self.tree_action.isChecked() or self.tabular_action.isChecked() or self.json_action.isChecked()):
-                print("entrato")
-                print(self.tree_action.property("view_mask") == self._content_win.driver_type.value)
-                print(str(self.tabular_action.property("view_mask")) + " " + str(self._content_win.driver_type.value))
-                print(self.json_action.property("view_mask") == self._content_win.driver_type.value)
+                self.tree_action.setChecked(self.tree_action.property("view_mask") == self._content_win.driver_type.selected_view.value)
+                self.tabular_action.setChecked(self.tabular_action.property("view_mask") == self._content_win.driver_type.selected_view.value)
+                self.json_action.setChecked(self.json_action.property("view_mask") == self._content_win.driver_type.selected_view.value)
 
-                self.tree_action.setChecked(self.tree_action.property("view_mask") == self._content_win.driver_type.default_view.value)
-                self.tabular_action.setChecked(self.tabular_action.property("view_mask") == self._content_win.driver_type.default_view.value)
-                self.json_action.setChecked(self.json_action.property("view_mask") == self._content_win.driver_type.default_view.value)
+
+    def actionTriggered(self, action):
+        self._content_win.driver_type.setSelectedView(ViewTypeEnum[action.text().upper()])
+        self._content_win.refresh_content(None)
 

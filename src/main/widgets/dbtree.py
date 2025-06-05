@@ -47,7 +47,7 @@ class DbTree(QTreeView):
             if response is not None:
                 self.custom_signals.table_loaded.emit(response)
         except Exception as e:
-            self.custom_signals.wrong_query.emit(self, "Error", str(e))
+            self.custom_signals.wrong_action.emit(self, "Error", str(e))
         
 
     def on_item_expanded(self, index: QModelIndex):

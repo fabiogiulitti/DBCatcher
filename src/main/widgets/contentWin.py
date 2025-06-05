@@ -1,7 +1,9 @@
 from typing import Optional
 from PyQt6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QSpacerItem, QLabel, QMessageBox
+from main.core.driver import abstractdataresponse
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.ActonTypeEnum import DriverTypeEnum
+from main.widgets.content_tree import ContentTree
 from main.widgets.dbcontent import DbContent
 from main.widgets.dbtabular import DbTabular
 from main.widgets.dbtree import DbTreeSignals
@@ -13,45 +15,59 @@ class ContentWin(QWidget):
     def __init__(self, parent, signals: DbTreeSignals):
         super().__init__(parent)
         self._queryTxt = QueryEdit(self)
-        cntLayout = QVBoxLayout()
-        cntLayout.addSpacerItem(QSpacerItem(100, 30, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
-        cntLayout.addWidget(QLabel("Query"))
-        cntLayout.addWidget(self._queryTxt)
+        cnt_layout = QVBoxLayout()
+        cnt_layout.addSpacerItem(QSpacerItem(100, 30, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+        cnt_layout.addWidget(QLabel("Query"))
+        cnt_layout.addWidget(self._queryTxt)
 
-        self.contentTxt = DbContent(self, self._queryTxt)
-        self.contentTxt.setVisible(False)
-        self.contentTab = DbTabular(self, self._queryTxt)
-        self.contentTab.setVisible(False)
-        cntLayout.addSpacerItem(QSpacerItem(100, 30, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
-        cntLayout.addWidget(QLabel("Result data"))
-        cntLayout.addWidget(self.contentTxt)
-        cntLayout.setStretchFactor(self._queryTxt, 3)
-        cntLayout.setStretchFactor(self.contentTxt, 10)
-        self.setLayout(cntLayout)
+        self.content_txt = DbContent(self, self._queryTxt)
+        self.content_txt.setVisible(False)
+        self.content_tab = DbTabular(self, self._queryTxt)
+        self.content_tab.setVisible(False)
+        self.content_tree = ContentTree(self, self._queryTxt)
+        self.content_tree.setVisible(False)
+        cnt_layout.addSpacerItem(QSpacerItem(100, 30, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+        cnt_layout.addWidget(QLabel("Result data"))
+        cnt_layout.addWidget(self.content_txt)
+        cnt_layout.setStretchFactor(self._queryTxt, 3)
+        cnt_layout.setStretchFactor(self.content_txt, 10)
+        self.setLayout(cnt_layout)
         self.setVisible(False)
 
         self.driver_type: Optional[DriverTypeEnum ] = None
+        self._response: Optional[AbstractDataResponse] = None
 
         signals.table_loaded.connect(self.refresh_content)
         self._queryTxt.custom_signals.results_updated.connect(self.refresh_content)
         
 
     def refresh_content(self, response: AbstractDataResponse):
-        metadata: dict = response.metadata()
+        if response:
+            self._response = response
+        assert self._response
+        metadata: dict = self._response.metadata()
         self.driver_type = metadata['type']
         assert self.driver_type
         try:
-            if self.driver_type.default_view == ViewTypeEnum.JSON:
-                data = response.toJson()
-                self.contentTxt.refreshData(data)
-                self.contentTab.setVisible(False)
-                self.contentTxt.setVisible(True)
-            elif self.driver_type.default_view == ViewTypeEnum.TABULAR:
-                data = response.toTabular()
-                self.contentTab.refreshData(data)
-                self.contentTxt.setVisible(False)
-                self.contentTab.setVisible(True)
-
+            if self.driver_type.selected_view == ViewTypeEnum.JSON:
+                data = self._response.toJson()
+                self.content_txt.refreshData(data)
+                self.content_tab.setVisible(False)
+                self.content_tree.setVisible(False)
+                self.content_txt.setVisible(True)
+            elif self.driver_type.selected_view == ViewTypeEnum.TABULAR:
+                data = self._response.toTabular()
+                self.content_tab.refreshData(data)
+                self.content_txt.setVisible(False)
+                self.content_tab.setVisible(True)
+                self.content_tree.setVisible(False)
+            elif self.driver_type.selected_view == ViewTypeEnum.TREE:
+                data = self._response.toTree()
+                self.content_tree.refreshData(data)
+                self.content_txt.setVisible(False)
+                self.content_tab.setVisible(False)
+                self.content_tree.setVisible(True)
+    
             self.setVisible(True)
         except Exception as e:
             QMessageBox.information(self, "Error", str(e))

@@ -21,7 +21,7 @@ class ObjectTypeEnum(Enum):
 
 
 class DriverTypeEnum(Enum):
-    MONGODB = ('MongoDB', ViewTypeEnum.JSON, ViewTypeEnum.JSON.value | ViewTypeEnum.TREE.value)
+    MONGODB = ('MongoDB', ViewTypeEnum.TREE, ViewTypeEnum.JSON.value | ViewTypeEnum.TREE.value)
     POSTGRESQL = ('PostgreSQL', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value)
     ORACLE = ('Oracle', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value)
     MYSQL = ('MySql', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value)
@@ -29,7 +29,7 @@ class DriverTypeEnum(Enum):
 
     def __init__(self, label, default_view, available_views) -> None:
         self.label = label
-        self.default_view: ViewTypeEnum = default_view
+        self.selected_view: ViewTypeEnum = default_view
         self.available_views = available_views
 
 
@@ -40,3 +40,7 @@ class DriverTypeEnum(Enum):
                 return item
         raise ValueError(f"{label=} not found in {cls.__name__}")
 
+
+    def setSelectedView(self, view: ViewTypeEnum):
+        self.selected_view = view
+        

@@ -40,6 +40,11 @@ class DataResponse(AbstractDataResponse):
 
         return ContentDataModel(model, self._query, self._metaData)
     
+
+    def toTree(self):
+        pass
+
+
     def metadata(self):
         return self._metaData
 

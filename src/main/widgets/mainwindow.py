@@ -25,9 +25,9 @@ class MainWindow(QMainWindow):
         self.setMenuBar(content_menu.ContentMenuBar(content_win))
         mainStatus = ContentStatus(self)
         self.setStatusBar(mainStatus)
-        self.setTabOrder(dbTree, content_win.contentTxt)
-        self.setTabOrder(content_win.contentTxt, content_win.contentTab)
-        self.setTabOrder(content_win.contentTab, content_win._queryTxt)
+        self.setTabOrder(dbTree, content_win.content_txt)
+        self.setTabOrder(content_win.content_txt, content_win.content_tab)
+        self.setTabOrder(content_win.content_tab, content_win._queryTxt)
         
         self.show()
 
