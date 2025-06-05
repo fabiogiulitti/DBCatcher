@@ -5,9 +5,10 @@ from main.core.treepath import ItemAction
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from json import dumps
-from main.widgets.ContentData import ContentData
+from main.widgets.ContentData import ContentData, ContentDataModel
 from main.core.driver.abstractdriver import AbstractTreeAction
 from main.core.ActonTypeEnum import ActionTypeEnum
+from PyQt6.QtGui import QStandardItemModel, QStandardItem
 
 @s
 class MongoDataResponse(AbstractDataResponse):
@@ -18,6 +19,20 @@ class MongoDataResponse(AbstractDataResponse):
     def toJson(self):
         text = dumps(self._docs, default=str, indent=4)
         return ContentData(text, self._query, self._metaData)
+
+    def toTree(self) -> ContentDataModel:
+        model = QStandardItemModel()
+        model.setHorizontalHeaderLabels(["Documents"])
+        rootItem = model.invisibleRootItem()
+        assert rootItem
+
+        for doc in self._docs:
+            item = QStandardItem("- {...}")
+            item.appendRows(createItems(doc))
+            rootItem.appendRow(item)
+
+#        model.setItem(0, 0, rootItem)
+        return ContentDataModel(model, self._query, self._metaData)
     
     def metadata(self):
         return self._metaData
@@ -85,3 +100,28 @@ def getDocuments(ctx: dict, curPage: int = 0, dimPage: int = 25):
     metaData['cur_page'] = curPage
     metaData['last_page'] = lastPage
     return MongoDataResponse(docs, query, metaData)
+
+
+def createItems(doc: dict) -> list:
+    qsi_list = list()
+    for key, value in doc.items():
+        if isinstance(value, dict):
+            qsi = QStandardItem(f"{key}: {{...}}")
+            qsi.appendRows(createItems(value))
+        elif isinstance(value, list):
+            qsi = QStandardItem(f"{key}: [...]")
+            for item in value:
+                if isinstance(item, dict):
+                    qsi_arr = QStandardItem("- {...}")
+                    qsi_arr.appendRows(createItems(item))
+                    qsi.appendRow(qsi_arr)
+                else:
+                    qsi.appendRow(QStandardItem(f"- {item}"))
+        else:
+            qsi = QStandardItem(f"{key}: {str(value)}")
+
+        qsi_list.append(qsi)
+
+    return qsi_list
+
+    

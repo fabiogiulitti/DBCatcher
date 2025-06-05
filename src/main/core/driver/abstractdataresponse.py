@@ -12,9 +12,9 @@ class AbstractDataResponse(ABC):
     def toTabular(self):
         raise NotImplementedError("Unsupported method for this driver")
     
- #   @abstractmethod
+    @abstractmethod
     def toTree(self):
-        raise NotImplementedError("Unsupported method for this driver")
+        pass
 
 #    @abstractmethod
     def metadata(self):
