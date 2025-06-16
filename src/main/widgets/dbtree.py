@@ -9,7 +9,7 @@ from main.core.ActonTypeEnum import ActionTypeEnum
 from PyQt6.QtGui import QKeyEvent
 from threading import Thread
 
-class DbTree(QTreeView):
+class DbTreeView(QTreeView):
 
     def __init__(self, parent) -> None:
         super().__init__(parent)

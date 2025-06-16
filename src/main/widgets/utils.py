@@ -1,4 +1,7 @@
+from signal import Signals, signal
 from PyQt6.QtGui import QStandardItem
+from PyQt6.QtCore import pyqtSignal, QObject
+from attrs import define
 from main.core.treepath import Node
 
 
@@ -19,3 +22,10 @@ def createItem(parentData: dict, text: str, node: Node) -> QStandardItem:
 
 def addLoadingItem(item):
     item.appendRow(QStandardItem('(LOADING...)'))
+
+@define
+class DBCSignals(QObject):
+    status_notify  = pyqtSignal(str, str)
+
+    def __init__(self):
+        super().__init__()

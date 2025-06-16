@@ -7,7 +7,7 @@ import sys
 
 from main.widgets import mainwindow
 
-class ContentTree(QTreeView):
+class ContentTreeView(QTreeView):
 
     def __init__(self, parent, queryTxt) -> None:
         super().__init__(parent)

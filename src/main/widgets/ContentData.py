@@ -24,9 +24,9 @@ class ContentData:
 
 @s
 class ContentDataModel:
-    _result: QStandardItemModel = ib()
-    _query: str = ib()
-    _metaData: dict = ib()
+    _result: QStandardItemModel
+    _query: str
+    _metaData: dict
 
     @property
     def results(self):

@@ -7,7 +7,7 @@ from main.core.manager import executeCntAction
 from main.widgets.ContentData import ContentData
 from main.core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
 
-class DbContent(QTextEdit):
+class ContenTextEdit(QTextEdit):
     def __init__(self, parent, queryTxt):
         super().__init__(parent)
         self._queryTxt = queryTxt

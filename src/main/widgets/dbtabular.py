@@ -7,7 +7,7 @@ from main.core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
 import csv
 import io
 
-class DbTabular(QTableView):
+class ContentTableView(QTableView):
 
     def __init__(self, parent: QWidget, queryTxt) -> None:
         super().__init__(parent)

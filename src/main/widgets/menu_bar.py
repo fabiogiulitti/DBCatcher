@@ -2,11 +2,11 @@ from PyQt6.QtWidgets import QMenu, QMenuBar
 from PyQt6.QtGui import QAction, QActionGroup
 
 from main.core.ActonTypeEnum import DriverTypeEnum
-from main.widgets import contentWin
+from main.widgets import content_window
 from main.widgets.model.viewtypeenum import ViewTypeEnum
 
-class ContentMenuBar(QMenuBar):
-    def __init__(self, content_win: contentWin.ContentWin):
+class DBCMenuBar(QMenuBar):
+    def __init__(self, content_win: content_window.ContentWindow):
         super().__init__()
 
         self._content_win = content_win

@@ -1,35 +1,34 @@
 from typing import Optional
 from PyQt6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QSpacerItem, QLabel, QMessageBox
-from main.core.driver import abstractdataresponse
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.ActonTypeEnum import DriverTypeEnum
-from main.widgets.content_tree import ContentTree
-from main.widgets.dbcontent import DbContent
-from main.widgets.dbtabular import DbTabular
+from main.widgets.content_tree import ContentTreeView
+from main.widgets.dbcontent import ContenTextEdit
+from main.widgets.dbtabular import ContentTableView
 from main.widgets.dbtree import DbTreeSignals
 from main.widgets.queryedit import QueryEdit
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.widgets.model.viewtypeenum import ViewTypeEnum
 
-class ContentWin(QWidget):
+class ContentWindow(QWidget):
     def __init__(self, parent, signals: DbTreeSignals):
         super().__init__(parent)
-        self._queryTxt = QueryEdit(self)
+        self._query_txt = QueryEdit(self)
         cnt_layout = QVBoxLayout()
         cnt_layout.addSpacerItem(QSpacerItem(100, 30, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         cnt_layout.addWidget(QLabel("Query"))
-        cnt_layout.addWidget(self._queryTxt)
+        cnt_layout.addWidget(self._query_txt)
 
-        self.content_txt = DbContent(self, self._queryTxt)
+        self.content_txt = ContenTextEdit(self, self._query_txt)
         self.content_txt.setVisible(False)
-        self.content_tab = DbTabular(self, self._queryTxt)
+        self.content_tab = ContentTableView(self, self._query_txt)
         self.content_tab.setVisible(False)
-        self.content_tree = ContentTree(self, self._queryTxt)
+        self.content_tree = ContentTreeView(self, self._query_txt)
         self.content_tree.setVisible(False)
         cnt_layout.addSpacerItem(QSpacerItem(100, 30, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         cnt_layout.addWidget(QLabel("Result data"))
         cnt_layout.addWidget(self.content_txt)
-        cnt_layout.setStretchFactor(self._queryTxt, 3)
+        cnt_layout.setStretchFactor(self._query_txt, 3)
         cnt_layout.setStretchFactor(self.content_txt, 10)
         self.setLayout(cnt_layout)
         self.setVisible(False)
@@ -38,7 +37,7 @@ class ContentWin(QWidget):
         self._response: Optional[AbstractDataResponse] = None
 
         signals.table_loaded.connect(self.refresh_content)
-        self._queryTxt.custom_signals.results_updated.connect(self.refresh_content)
+        self._query_txt.custom_signals.results_updated.connect(self.refresh_content)
         
 
     def refresh_content(self, response: AbstractDataResponse):

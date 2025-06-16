@@ -1,4 +1,5 @@
 from attr import ib, s
+from attrs import define
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.treepath import TreePath,make_session_id, references
 from main.core.treepath import ItemAction
@@ -10,11 +11,11 @@ from main.core.driver.abstractdriver import AbstractTreeAction
 from main.core.ActonTypeEnum import ActionTypeEnum
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 
-@s
+@define
 class MongoDataResponse(AbstractDataResponse):
-    _docs: list = ib()
-    _query: str = ib()
-    _metaData: dict = ib()
+    _docs: list
+    _query: str
+    _metaData: dict
 
     def toJson(self):
         text = dumps(self._docs, default=str, indent=4)
