@@ -1,9 +1,8 @@
-from json import dumps
-from attr import ib, s
-from PyQt6.QtGui import QStandardItemModel, QStandardItem
+from attr import define, ib
+from PyQt6.QtGui import QStandardItemModel
 
 
-@s
+@define
 class ContentData:
     _results: str = ib()
     _query: str = ib()
@@ -22,7 +21,7 @@ class ContentData:
         return self._query
 
 
-@s
+@define
 class ContentDataModel:
     _result: QStandardItemModel
     _query: str

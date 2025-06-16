@@ -3,7 +3,7 @@ from attrs import define
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.treepath import TreePath,make_session_id, references
 from main.core.treepath import ItemAction
-from pymongo import MongoClient
+from pymongo import MongoClient, database
 from pymongo.collection import Collection
 from json import dumps
 from main.widgets.ContentData import ContentData, ContentDataModel
@@ -59,21 +59,41 @@ class TreeActions(AbstractTreeAction):
         return (databases,id)
 
 
-    @TreePath(node_type_in='databases', node_type_out='collections_holder')
-    def retrieveCollectionsHolding(self, ctx: dict):
-        return ([ 'collections', 'indexes' ],ctx['sessionID'])
+    @TreePath(node_type_in='databases', node_type_out='database_obj_holder')
+    def retrieveDatabaseObjHolding(self, ctx: dict):
+        return ([ 'collections' ],ctx['sessionID'])
 
-
-    @TreePath(node_type_in='collections_holder', node_type_out='collections')
+    @TreePath(node_type_in='database_obj_holder', node_type_out='collections')
     def retrieveCollections(self, ctx: dict):
         id = ctx['sessionID']
         client = references[id]['client']
         dbName = ctx['path'][0]
-        db = client[ctx['path'][0]]
+        db: database.Database = client[ctx['path'][0]]
         references[id][dbName] = db
-        collections = db.list_collection_names()
+        collections = sorted(db.list_collection_names())
         return (collections,id)
         
+    @TreePath(node_type_in='collections', node_type_out='collection_obj_holder')
+    def retrieveCollectionsObjHolding(self, ctx: dict):
+        return ([ 'indexes' ],ctx['sessionID'])
+
+    @TreePath(node_type_in='collection_obj_holder', node_type_out='indexes')
+    def retrieveIndexes(self, ctx: dict):
+        id = ctx['sessionID']
+        client = references[id]['client']
+        db_name = ctx['path'][0]
+        db = client[db_name]
+        col_name = ctx['path'][2]
+        collection: database.Collection = db[col_name]
+
+        index_dict = collection.index_information()
+
+        indexes = []
+        for index in index_dict.items():
+            indexes.append(str(index))
+
+        return (indexes,id)
+
 
     @ItemAction(node_type_in='collections', action_type = ActionTypeEnum.CLICK)
     def retrieveFirstDocuments(self, ctx: dict):

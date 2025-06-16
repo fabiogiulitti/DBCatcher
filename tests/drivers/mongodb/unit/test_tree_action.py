@@ -1,8 +1,5 @@
-from pydoc import describe, text
-import pytest
-from unittest.mock import MagicMock, patch
 from PyQt6.QtCore import Qt
-from drivers.mongodb.treeactionrules import MongoDataResponse, createItems
+from drivers.mongodb.treeactionrules import MongoDataResponse
 
 
 def test_mongo_data_response():
