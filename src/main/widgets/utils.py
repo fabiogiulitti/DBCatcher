@@ -2,6 +2,7 @@ from signal import Signals, signal
 from PyQt6.QtGui import QStandardItem
 from PyQt6.QtCore import pyqtSignal, QObject
 from attrs import define
+from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.treepath import Node
 
 
@@ -26,6 +27,8 @@ def addLoadingItem(item):
 @define
 class DBCSignals(QObject):
     status_notify  = pyqtSignal(str, str)
+    table_loaded = pyqtSignal(AbstractDataResponse)
+
 
     def __init__(self):
         super().__init__()

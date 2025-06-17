@@ -1,7 +1,5 @@
-from concurrent.futures import Future, thread
-from sys import exception
 from PyQt6.QtWidgets import QTreeView, QMessageBox, QWidget
-from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal, QObject, QItemSelectionModel
+from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal, QObject
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.manager import executeTreeAction
 from main.widgets.modelmanager import ModelManager
@@ -9,9 +7,12 @@ from main.core.ActonTypeEnum import ActionTypeEnum
 from PyQt6.QtGui import QKeyEvent
 from threading import Thread
 
-class DbTreeView(QTreeView):
+from main.widgets.utils import DBCSignals
 
-    def __init__(self, parent) -> None:
+class DbTreeView(QTreeView):
+    _wrong_action = pyqtSignal(QWidget, str, str)
+
+    def __init__(self, parent, dbc_signals: DBCSignals) -> None:
         super().__init__(parent)
         self.setAccessibleName("Connections")
         self.modelManager = ModelManager.createBaseModel()
@@ -20,8 +21,8 @@ class DbTreeView(QTreeView):
         self.collapsed.connect(self.on_item_collapsed)
         self.show()
 
-        self.custom_signals = DbTreeSignals()
-        self.custom_signals.wrong_action.connect(QMessageBox.information)
+        self._wrong_action.connect(QMessageBox.information)
+        self._dbc_signals = dbc_signals
 
 
     def mousePressEvent(self, event):
@@ -45,9 +46,9 @@ class DbTreeView(QTreeView):
         try:
             response: AbstractDataResponse = executeTreeAction(ctx)
             if response is not None:
-                self.custom_signals.table_loaded.emit(response)
+                self._dbc_signals.table_loaded.emit(response)
         except Exception as e:
-            self.custom_signals.wrong_action.emit(self, "Error", str(e))
+            self._wrong_action.emit(self, "Error", str(e))
         
 
     def on_item_expanded(self, index: QModelIndex):
@@ -57,7 +58,7 @@ class DbTreeView(QTreeView):
         try:
             self.modelManager.expandModel(index)
         except Exception as e:
-            self.custom_signals.wrong_action.emit(self, "Error", str(e))
+            self._wrong_action.emit(self, "Error", str(e))
 
     def on_item_collapsed(self, index: QModelIndex):
         try:
@@ -65,6 +66,3 @@ class DbTreeView(QTreeView):
         except Exception as e:
             QMessageBox.information(self, "Error", str(e))
 
-class DbTreeSignals(QObject):
-    table_loaded = pyqtSignal(AbstractDataResponse )
-    wrong_action = pyqtSignal(QWidget, str, str)

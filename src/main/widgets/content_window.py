@@ -5,13 +5,13 @@ from main.core.ActonTypeEnum import DriverTypeEnum
 from main.widgets.content_tree import ContentTreeView
 from main.widgets.dbcontent import ContenTextEdit
 from main.widgets.dbtabular import ContentTableView
-from main.widgets.dbtree import DbTreeSignals
 from main.widgets.queryedit import QueryEdit
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.widgets.model.viewtypeenum import ViewTypeEnum
+from main.widgets.utils import DBCSignals
 
 class ContentWindow(QWidget):
-    def __init__(self, parent, signals: DbTreeSignals):
+    def __init__(self, parent, dbc_signals: DBCSignals):
         super().__init__(parent)
         self._query_txt = QueryEdit(self)
         cnt_layout = QVBoxLayout()
@@ -36,7 +36,8 @@ class ContentWindow(QWidget):
         self.driver_type: Optional[DriverTypeEnum ] = None
         self._response: Optional[AbstractDataResponse] = None
 
-        signals.table_loaded.connect(self.refresh_content)
+        dbc_signals.table_loaded.connect(self.refresh_content)
+        self._dbc_signals = dbc_signals
         self._query_txt.custom_signals.results_updated.connect(self.refresh_content)
         
 
@@ -66,6 +67,7 @@ class ContentWindow(QWidget):
                 self.content_txt.setVisible(False)
                 self.content_tab.setVisible(False)
                 self.content_tree.setVisible(True)
+            self._dbc_signals.status_notify.emit("Results page:", f"{metadata['cur_page']} of {metadata['last_page']}")
     
             self.setVisible(True)
         except Exception as e:
