@@ -13,19 +13,33 @@ class MyDriver(AbstractDriver):
             self._actions[getattr(method, 'action_type')] = method
         
 
+    @ContentAction(action_type=ActionTypeEnum.FIRST_PAGE)
+    def _retrieveFirstDocuments(self, ctx: dict):
+        first_page = 0
+        if first_page <= ctx['last_page']:
+            return getDocuments(ctx, cur_page=first_page)
+        
     @ContentAction(action_type=ActionTypeEnum.NEXT_PAGE)
     def _retrieveMoreDocuments(self, ctx: dict):
-        nextPage = ctx['cur_page'] + 1
-        if nextPage <= ctx['last_page']:
-            return getDocuments(ctx, curPage=nextPage)
+        next_page = ctx['cur_page'] + 1
+        if next_page <= ctx['last_page']:
+            return getDocuments(ctx, cur_page=next_page)
         
     
     @ContentAction(action_type=ActionTypeEnum.PREVIOUS_PAGE)
     def _retrievePreviousDocuments(self, ctx: dict):
-        curPage = ctx['cur_page']
-        if curPage > 0:
-            prevPage = curPage - 1
-            return getDocuments(ctx, curPage=prevPage)
+        cur_page = ctx['cur_page']
+        if cur_page > 0:
+            prev_page = cur_page - 1
+            return getDocuments(ctx, cur_page=prev_page)
         else:
             return None
+        
 
+    @ContentAction(action_type=ActionTypeEnum.LAST_PAGE)
+    def _retrieveLastDocuments(self, ctx: dict):
+        last_page = ctx['last_page']
+        if last_page >= 0:
+            return getDocuments(ctx, cur_page=last_page)
+        else:
+            return None

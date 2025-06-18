@@ -1,18 +1,12 @@
-import re
-import json
 from textwrap import dedent
-from typing import Collection, Iterable
-
-import pymongo
-import pymongo.cursor
+from typing import Iterable
+from pymongo.cursor import Cursor
 from main.core.treepath import ContentAction
 from main.core.treepath import references
 from main.core.driver.abstractdriver import AbstractDriver
 from drivers.mongodb.treeactionrules import MongoDataResponse
 from main.core.ActonTypeEnum import ActionTypeEnum
-from pymongo.collection import Collection
 
-from drivers.mongodb.util.query_parser import QueryParser
 
 class MongoQueryActionDef(AbstractDriver):
 
@@ -33,20 +27,25 @@ class MongoQueryActionDef(AbstractDriver):
         db = references[id][dbName]
         scope = {'cursor': None,
                  'db': db}
-        
+
         query: str = dedent(ctx['query']).strip()
         #exec('cursor = ' + query)
         exec(f"cursor = {query}", {}, scope)
         cursor = scope['cursor']
-        print(cursor)
         docs = list()
-        if isinstance(cursor, Iterable):
-            for doc in cursor:
+        tot_result = 0
+        if isinstance(cursor, Cursor):
+            while (doc := next(cursor, None)) is not None and tot_result < 100:
+#            for doc in cursor:
                 docs.append(doc)
+                tot_result += 1
         else:
             docs.append({"countDocuments": cursor})
+            tot_result = 1
 
-        metaData = ctx.copy()
-#        metaData['cur_page'] = curPage
-#        metaData['last_page'] = lastPage
-        return MongoDataResponse(docs, query, metaData)
+        metadata = ctx.copy()
+        metadata['cur_page'] = 0
+        metadata['last_page'] = 0
+        metadata.pop("tot_result", 0)
+        metadata['dim_page'] = tot_result
+        return MongoDataResponse(docs, query, metadata)

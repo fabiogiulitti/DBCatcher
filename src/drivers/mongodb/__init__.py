@@ -10,7 +10,8 @@ class MongoDriver(AbstractDbDriver):
 
     def __init__(self) -> None:
         super().__init__()
-        self._objects[ObjectTypeEnum.TEXT_AREA] = MyDriver()
         self._objects[ObjectTypeEnum.DB_TREE] = TreeActions()
+        self._objects[ObjectTypeEnum.TEXT_AREA] = MyDriver()
+        self._objects[ObjectTypeEnum.TREE] = MyDriver()
         self._objects[ObjectTypeEnum.QUERY_EDIT] = MongoQueryActionDef()
         

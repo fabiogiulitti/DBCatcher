@@ -1,3 +1,4 @@
+import math
 from attr import ib, s
 from attrs import define
 from main.core.driver.abstractdataresponse import AbstractDataResponse
@@ -100,27 +101,29 @@ class TreeActions(AbstractTreeAction):
         return getDocuments(ctx)
 
 
-def getDocuments(ctx: dict, curPage: int = 0, dimPage: int = 25):
+def getDocuments(ctx: dict, cur_page: int = 0, dim_page: int = 25):
     id = ctx['sessionID']
-    dbName = ctx['path'][0]
-    colName = ctx['path'][2]
-    query = f"db.{colName}.find()"
+    db_name = ctx['path'][0]
+    col_name = ctx['path'][2]
+    query = f"db.{col_name}.find()"
 
-    db = references[id][dbName]
-    col: Collection = db[colName]
+    db = references[id][db_name]
+    col: Collection = db[col_name]
 
-    numDocs = col.estimated_document_count()
-    skip = curPage * dimPage
-    lastPage = numDocs / dimPage - 1
+    tot_result = col.estimated_document_count()
+    skip = cur_page * dim_page
+    last_page = math.ceil(tot_result / dim_page) - 1
 
     docs = list()
-    for doc in col.find().skip(skip).limit(dimPage):
+    for doc in col.find().skip(skip).limit(dim_page):
         docs.append(doc)
     
-    metaData = ctx.copy()
-    metaData['cur_page'] = curPage
-    metaData['last_page'] = lastPage
-    return MongoDataResponse(docs, query, metaData)
+    metadata = ctx.copy()
+    metadata['cur_page'] = cur_page
+    metadata['last_page'] = last_page
+    metadata['dim_page'] = dim_page
+    metadata['tot_result'] = tot_result
+    return MongoDataResponse(docs, query, metadata)
 
 
 def createItems(doc: dict) -> list:
