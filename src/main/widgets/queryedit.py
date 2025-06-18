@@ -15,18 +15,18 @@ class QueryEdit(QTextEdit):
         super().__init__(parent)
 
         self.setTabChangesFocus(True)
-        self._metaData = dict()
+        self._metadata = dict()
 
         self.custom_signals = QueryEditSignals()
         self.custom_signals.wrong_query.connect(QMessageBox.information)
 
 
     def setMetaData(self, metaData: dict):
-        self._metaData = metaData
+        self._metadata = metaData
 
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_Return:
-            ctx = self._metaData
+            ctx = self._metadata
             ctx['action_type'] = ActionTypeEnum.CTRL_ENTER
             ctx['action_obj'] = ObjectTypeEnum.QUERY_EDIT
             ctx['query'] = self.toPlainText()
@@ -40,7 +40,6 @@ class QueryEdit(QTextEdit):
             response: AbstractDataResponse = executeCntAction(ctx)
             if response is not None:
                 self.custom_signals.results_updated.emit(response)
-#            self._parent.refresh_content(response)
         except Exception as e:
             self.custom_signals.wrong_query.emit(self, "Error", str(e))
 

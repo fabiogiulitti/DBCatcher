@@ -35,7 +35,12 @@ class MainWindow(QMainWindow):
         self.setTabOrder(db_tree, content_win.content_txt)
         self.setTabOrder(content_win.content_txt, content_win.content_tab)
         self.setTabOrder(content_win.content_tab, content_win.content_tree)
-        self.setTabOrder(content_win.content_tree, content_win._query_txt)
+        self.setTabOrder(content_win.content_tree, content_win._first_page_btn)
+        self.setTabOrder(content_win._first_page_btn, content_win._prev_page_btn)
+        self.setTabOrder(content_win._prev_page_btn, content_win._next_page_btn)
+        self.setTabOrder(content_win._next_page_btn, content_win._last_page_btn)
+        self.setTabOrder(content_win._last_page_btn, content_win._query_txt)
+        self.setTabOrder(content_win._query_txt, content_win._execute_btn)
         
         self.show()
 

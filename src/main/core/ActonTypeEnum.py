@@ -8,9 +8,12 @@ from main.widgets.model.viewtypeenum import ViewTypeEnum
 class ActionTypeEnum(Enum):
     EXPAND = 'expand'
     CLICK = 'click'
-    NEXT_PAGE = 'next_page'
+    FIRST_PAGE = 'first_page'
     PREVIOUS_PAGE = 'previous_page'
+    NEXT_PAGE = 'next_page'
+    LAST_PAGE = 'last_page'
     CTRL_ENTER = 'ctrl_enter'
+    EXECUTE = 'execute'
 
 
 class ObjectTypeEnum(Enum):
@@ -18,6 +21,7 @@ class ObjectTypeEnum(Enum):
     QUERY_EDIT = 'query_edit'
     DB_TREE = 'db_tree'
     TABULAR = 'tabular'
+    TREE = 'tree'
 
 
 class DriverTypeEnum(Enum):

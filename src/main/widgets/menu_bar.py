@@ -44,19 +44,19 @@ class DBCMenuBar(QMenuBar):
         action_group.triggered.connect(self.actionTriggered)
 
     def about_to_show(self):
-        if self._content_win.driver_type is not None:
-            available_views = self._content_win.driver_type.available_views
+        if self._content_win._driver_type is not None:
+            available_views = self._content_win._driver_type.available_views
             self.tree_action.setEnabled(bool(self.tree_action.property("view_mask") & available_views))
             self.tabular_action.setEnabled(self.tabular_action.property("view_mask") & available_views)
             self.json_action.setEnabled(self.json_action.property("view_mask") & available_views)
 
             if not (self.tree_action.isChecked() or self.tabular_action.isChecked() or self.json_action.isChecked()):
-                self.tree_action.setChecked(self.tree_action.property("view_mask") == self._content_win.driver_type.selected_view.value)
-                self.tabular_action.setChecked(self.tabular_action.property("view_mask") == self._content_win.driver_type.selected_view.value)
-                self.json_action.setChecked(self.json_action.property("view_mask") == self._content_win.driver_type.selected_view.value)
+                self.tree_action.setChecked(self.tree_action.property("view_mask") == self._content_win._driver_type.selected_view.value)
+                self.tabular_action.setChecked(self.tabular_action.property("view_mask") == self._content_win._driver_type.selected_view.value)
+                self.json_action.setChecked(self.json_action.property("view_mask") == self._content_win._driver_type.selected_view.value)
 
 
     def actionTriggered(self, action):
-        self._content_win.driver_type.setSelectedView(ViewTypeEnum[action.text().upper()])
+        self._content_win._driver_type.setSelectedView(ViewTypeEnum[action.text().upper()])
         self._content_win.refresh_content(None)
 
