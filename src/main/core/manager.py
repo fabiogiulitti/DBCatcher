@@ -1,3 +1,5 @@
+import logging
+from typing import Optional
 from main.core.driver.dbdriver import AbstractDbDriver
 import main.core.driver.abstractdriver as car
 from main.core.driver import abstractdataresponse
@@ -7,6 +9,8 @@ from drivers.mongodb import MongoDriver
 from main.core.treepath import drivers
 from main.core.ActonTypeEnum import DriverTypeEnum, ObjectTypeEnum
 from drivers.postgresql import PostgreSQLDriver
+
+log = logging.getLogger(__name__)
 
 psd = PostgreSQLDriver()
 drivers[DriverTypeEnum.POSTGRESQL.name] = psd
@@ -22,11 +26,13 @@ def executeTreeNav(ctx: dict):
     return obj.executeNavAction(ctx['levelTag'], path[-1], ctx)
 
 
-def executeTreeAction(ctx: dict) -> abstractdataresponse.AbstractDataResponse:
+def executeTreeAction(ctx: dict) -> Optional[abstractdataresponse.AbstractDataResponse]:
     driver: AbstractDbDriver = drivers[ctx['type'].name]
     obj: car.AbstractTreeAction = driver.getObject(ObjectTypeEnum.DB_TREE)
-    return obj.executeAction(ctx['levelTag'], ctx['action_type'], ctx)
-
+    result = obj.executeAction(ctx['levelTag'], ctx['action_type'], ctx)
+    if not result:
+        log.info("Action [%s] on tree level [%s] not found", ctx['action_type'], ctx['levelTag'])
+    return result
 
 
 def executeCntAction(ctx: dict):    

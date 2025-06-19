@@ -7,3 +7,4 @@ share/
 src/config/config.yaml
 pyvenv.cfg
 poetry.lock
+**.log

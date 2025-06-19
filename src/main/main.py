@@ -3,6 +3,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from main.widgets.mainwindow import MainWindow
 import main.cli_args as cli_args
+import main.core.util.util
 
 parser = ArgumentParser()
 parser.add_argument('-c', '--configFile', help='Specify alternative config file path')
