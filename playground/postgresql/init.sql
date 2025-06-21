@@ -1,18 +1,34 @@
 CREATE SCHEMA comics;
 
+--
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100),
-    email VARCHAR(100)
+    email VARCHAR(100),
+    address JSONB
 );
 
+--
+INSERT INTO users (name, email, address) VALUES ('John Doe', 'john.doe@example.com', '{"street": "123 Main St", "city": "Anytown", "zip_code": "12345"}');
+INSERT INTO users (name, email, address) VALUES ('Jane Smith', 'jane.smith@example.com', '{"street": "456 Oak Ave", "city": "Someplace", "zip_code": "67890"}');
+INSERT INTO users (name, email, address) VALUES ('Alice Johnson', 'alice.johnson@example.com', null);
+INSERT INTO users (name, email, address) VALUES ('Bob Brown', 'bob.brown@example.com', '{"street": "789 Pine Ln", "city": "Otherville", "state": "CA"}');
 
-INSERT INTO users (name, email) VALUES ('John Doe', 'john.doe@example.com');
-INSERT INTO users (name, email) VALUES ('Jane Smith', 'jane.smith@example.com');
-INSERT INTO users (name, email) VALUES ('Alice Johnson', 'alice.johnson@example.com');
-INSERT INTO users (name, email) VALUES ('Bob Brown', 'bob.brown@example.com');
+--
+CREATE TABLE IF NOT EXISTS comics.users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    address JSONB
+);
 
+--
+INSERT INTO comics.users (name, email, address) VALUES ('John Doe', 'john.doe@example.com', '{"street": "123 Main St", "city": "Anytown", "zip_code": "12345"}');
+INSERT INTO comics.users (name, email, address) VALUES ('Jane Smith', 'jane.smith@example.com', '{"street": "456 Oak Ave", "city": "Someplace", "zip_code": "67890"}');
+INSERT INTO comics.users (name, email, address) VALUES ('Alice Johnson', 'alice.johnson@example.com', null);
+INSERT INTO comics.users (name, email, address) VALUES ('Bob Brown', 'bob.brown@example.com', '{"street": "789 Pine Ln", "city": "Otherville", "state": "CA"}');
 
+--
 CREATE TABLE comics.characters (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -23,6 +39,8 @@ CREATE TABLE comics.characters (
     species VARCHAR(50),
     alignment VARCHAR(20)
 );
+
+--
 INSERT INTO comics.characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Michael Hicks', 'Image', '1997-10-22', 'Savannah Goodwin', 'Female', 'Animal', 'Neutral');
 INSERT INTO comics.characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Scott Meyer', 'Image', '1987-11-15', 'Tracy Wilkinson', 'Other', 'Human', 'Good');
 INSERT INTO comics.characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Christopher Davis', 'Image', '1980-06-26', 'Gloria Morales', 'Other', 'Animal', 'Neutral');
@@ -323,3 +341,68 @@ INSERT INTO comics.characters (name, universe, first_appearance, creator, gender
 INSERT INTO comics.characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Shawn Williams', 'DC', '1977-02-19', 'Cheyenne Diaz', 'Female', 'Robot', 'Good');
 INSERT INTO comics.characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Johnathan Perez', 'Image', '1973-08-03', 'Kara Cruz', 'Other', 'Human', 'Neutral');
 INSERT INTO comics.characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Monique Maynard', 'Manga', '1948-03-28', 'Joshua Berry', 'Female', 'Robot', 'Evil');
+
+
+-- views
+
+--
+CREATE OR REPLACE VIEW comics.character_details AS
+SELECT
+    *,
+    AGE(CURRENT_DATE, first_appearance) AS tempo_di_esistenza
+FROM
+    comics.characters;
+--
+CREATE MATERIALIZED VIEW comics.character_details_json AS
+SELECT
+    id,
+    to_jsonb(ROW(name, universe, first_appearance, creator, gender, species, alignment)) AS data
+FROM
+    comics.characters;
+	
+
+-- Functions and Procedures
+	
+--
+CREATE OR REPLACE PROCEDURE comics.copy_characters()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- 1. Check existence of tabella 'characters_new'
+    IF NOT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'comics' AND table_name = 'characters_new'
+    ) THEN
+        -- 2. Create table with the same structure and add timestamp
+        execute '
+            CREATE TABLE comics.characters_new AS 
+              SELECT *, now()::timestamp AS copied_at
+              FROM comics.characters';
+    END IF;
+
+    -- 3. Populate data from comics.characters
+    execute '
+        INSERT INTO comics.characters_new
+          SELECT *, now()::timestamp FROM comics.characters';
+END;
+$$;
+
+--
+CREATE OR REPLACE FUNCTION comics.days_since_jan1(input_year INTEGER)
+RETURNS INTEGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    start_date DATE;
+    today DATE := CURRENT_DATE;
+    days_passed INTEGER;
+BEGIN
+    -- Imposta il 1º gennaio dell'anno fornito
+    start_date := make_date(input_year, 1, 1);
+    
+    -- Calcola la differenza in giorni
+    days_passed := today - start_date;
+
+    RETURN days_passed;
+END;
+$$;

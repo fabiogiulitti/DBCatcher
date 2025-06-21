@@ -1,7 +1,8 @@
-from ast import List
-from importlib import metadata
-import inspect
-from platform import node
+import math
+from os import path
+from sys import exception
+import psycopg2
+from requests import patch
 from main.core.ActonTypeEnum import ActionTypeEnum
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.treepath import ItemAction, TreePath,make_session_id, references
@@ -19,6 +20,10 @@ class DataResponse(AbstractDataResponse):
     _rows: list = ib()
     _query: str = ib()
     _metaData: dict = ib()
+
+    @property
+    def rows(self):
+        return self._rows
 
     def toJson(self):
         result = list()
@@ -75,8 +80,8 @@ class PSTreeActions(AbstractTreeAction):
 
         try:
             
-            conn = connect(ctx['connectionURI'])
-            references[id] = {'connection_uri' : ctx['connectionURI']}
+            conn = connect(ctx['connection_uri'])
+            references[id] = {'connection_uri' : ctx['connection_uri']}
             cursor = conn.cursor()
 
             cursor.execute("SELECT datname FROM pg_database WHERE datistemplate = false;")
@@ -97,12 +102,12 @@ class PSTreeActions(AbstractTreeAction):
     @TreePath(node_type_in='databases', node_type_out='schemas')
     def retrieveSchemas(self, ctx: dict):
         id = ctx['sessionID']
-        connectionURI = references[id]['connection_uri']
-        dsn = extensions.make_dsn(connectionURI, dbname = ctx['path'][0])
+        connection_uri = references[id]['connection_uri']
+        dsn = extensions.make_dsn(connection_uri, dbname = ctx['path'][0])
         conn = connect(dsn)
 
         cur = conn.cursor()
-        cur.execute("""
+        cur.execute("""     
             SELECT schema_name
             FROM information_schema.schemata
         """)
@@ -115,34 +120,84 @@ class PSTreeActions(AbstractTreeAction):
 
 
     @TreePath(node_type_in='schemas', node_type_out='schema_obj_hold')
-    def retrieveObjHolding(self, ctx: dict):
-        return (['tables','views'],ctx['sessionID'])
+    def retrieveSchemaHolding(self, ctx: dict):
+        return (['tables','views','materialized views','functions','sequences'],ctx['sessionID'])
 
 
     @TreePath(node_type_in='schema_obj_hold', node_type_out='tables', holder_type='tables')
     def retrieveTables(self, ctx: dict):
         objType = getattr(self.retrieveTables, 'holder_type')
-        return self.retrieveDbObjects(ctx, objType)
+        return self._retrieveDbObjects(ctx, 'BASE TABLE')
 
     @TreePath(node_type_in='schema_obj_hold', node_type_out='views', holder_type='views')
     def retrieveViews(self, ctx: dict):
         objType = getattr(self.retrieveViews, 'holder_type')
-        return self.retrieveDbObjects(ctx, objType)
+        return self._retrieveDbObjects(ctx, 'VIEW')
     
-    def retrieveDbObjects(self, ctx, objType):
+    @TreePath(node_type_in='schema_obj_hold', node_type_out='materialized views', holder_type='materialized views')
+    def retrieveMaterializedViews(self, ctx: dict):
+        id = ctx['sessionID']
+        schema = ctx['path'][-2]
+        conn = references[id]['client']
+        cur = conn.cursor()
+        query = f"""
+            SELECT matviewname
+            FROM pg_catalog.pg_matviews
+            WHERE schemaname = '{schema}'
+        """
+
+        cur.execute(query)
+
+        mat_views = cur.fetchall()
+        result = map(lambda n: n[0], mat_views)
+
+        cur.close()
+        return (result, id)
+    
+    @TreePath(node_type_in='schema_obj_hold', node_type_out='materialized views', holder_type='functions')
+    def retrieveFunctions(self, ctx: dict):
+        schema = ctx['path'][-2]
+
+        query = f"""
+                SELECT routine_name, routine_type
+                FROM information_schema.routines
+                where routine_schema = '{schema}'
+            """
+        
+        id = ctx['sessionID']
+        conn = references[id]['client']
+        try:
+            cur = conn.cursor()
+            cur.execute(query)
+
+            functions = cur.fetchall()
+            result = map(lambda r: f"{r[0]} ({r[1]})", functions)
+
+            cur.close()
+            return (result, id)
+        except Exception:
+            cur.close()
+            conn.rollback()
+            raise
+        
+    
+    def _retrieveDbObjects(self, ctx, objType):
         id = ctx['sessionID']
         schema = ctx['path'][-2]
         
         conn = references[id]['client']
         cur = conn.cursor()
-        cur.execute(f"""
+        query = f"""
             SELECT table_name
-            FROM information_schema.{objType}
+            FROM information_schema.tables
             WHERE table_schema = '{schema}'
-        """)
-
+            AND table_type = '{objType}'
+        """
+        cur.execute(query)
         tables = cur.fetchall()
         result = map(lambda n: n[0], tables)
+
+        cur.close()
 
         return (result, id)
     
@@ -154,60 +209,94 @@ class PSTreeActions(AbstractTreeAction):
 
     @TreePath(node_type_in='tables_obj_hold', node_type_out='columns', holder_type='columns')
     def retrieveColumns(self, ctx: dict):
-        objType = getattr(self.retrieveColumns, 'holder_type')
         id = ctx['sessionID']
-        tableName = ctx['path'][-2]
+        schema_name = ctx['path'][-4]
+        table_name = ctx['path'][-2]
         
         conn = references[id]['client']
         cur = conn.cursor()
         cur.execute(f"""
             SELECT column_name, data_type, character_maximum_length
             FROM information_schema.columns
-                    where table_name = '{tableName}'
+                    where table_schema = '{schema_name}'
+                    and table_name = '{table_name}'
+                    order by ordinal_position
         """)
 
         columns = cur.fetchall()
         result = map(lambda n: f"{n[0]} {n[1]} {n[2]}", columns)
 
+        cur.close()
+
         return (result, id)
     
     @TreePath(node_type_in='tables_obj_hold', node_type_out='indexes', holder_type='indexes')
     def retrieveIndexes(self, ctx: dict):
-        return ["(NOT DEFINED)"],ctx['sessionID']
+        id = ctx['sessionID']
+        schema_name = ctx['path'][-4]
+        table_name = ctx['path'][-2]
+
+        conn = references[id]['client']
+        cur = conn.cursor()
+        query = f"""
+            SELECT indexname
+            FROM pg_catalog.pg_indexes
+            WHERE schemaname = '{schema_name}'
+            and tablename = '{table_name}'
+        """
+
+        cur.execute(query)
+
+        indexes = cur.fetchall()
+        result = map(lambda n: n[0], indexes)
+
+        cur.close()
+        return (result, id)
 
 
     @ItemAction(node_type_in='tables', action_type = ActionTypeEnum.CLICK)
-    def retrieveFirstRows(self, ctx: dict):
+    def retrieveFirstRowsTable(self, ctx: dict):
         return getRows(ctx)
 
-
-def getRows(ctx: dict, curPage: int = 0, dimPage: int = 25):
+    @ItemAction(node_type_in='views', action_type = ActionTypeEnum.CLICK)
+    def retrieveFirstRowsView(self, ctx: dict):
+        return getRows(ctx)
+    
+    @ItemAction(node_type_in='materialized views', action_type = ActionTypeEnum.CLICK)
+    def retrieveFirstRowsMatView(self, ctx: dict):
+        return getRows(ctx)
+    
+def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
     id = ctx['sessionID']
-    schemaName = ctx['path'][1]
-    tabName = ctx['path'][-1]
+    schema_name = ctx['path'][1]
+    tab_name = ctx['path'][-1]
 
     conn = references[id]['client']
-    skip = curPage * dimPage
+    skip = cur_page * dim_page
 
-    lastPage = getTableCount(dimPage, schemaName, tabName, conn)
+    tot_result,last_page = getTableCount(dim_page, schema_name, tab_name, conn)
     
-    cur = conn.cursor()
+    cur: extensions.cursor = conn.cursor()
     query = dedent(f"""
                    SELECT *
-                   FROM {schemaName}.{tabName}
+                   FROM {schema_name}.{tab_name}
                    offset {skip}
-                   limit {dimPage}
+                   limit {dim_page}
         """).lstrip()
-
+    
     cur.execute(query)
-    rows = cur.fetchall()
+    
+    assert cur.description
     cols = [desc[0] for desc in cur.description]
+    rows = cur.fetchall()
     cur.close()
     
-    metaData = ctx.copy()
-    metaData['cur_page'] = curPage
-    metaData['last_page'] = lastPage
-    return DataResponse(cols, rows, query, metaData)
+    metadata = ctx.copy()
+    metadata['cur_page'] = cur_page
+    metadata['last_page'] = last_page
+    metadata['dim_page'] = dim_page
+    metadata['tot_result'] = tot_result
+    return DataResponse(cols, rows, query, metadata)
 
 
 def getTableCount(dimPage, schemaName, tabName, conn):
@@ -216,7 +305,7 @@ def getTableCount(dimPage, schemaName, tabName, conn):
                 select count(*) as numRecords
                 from {schemaName}.{tabName}
             """)
-    numRows = cur.fetchone()[0]
-    lastPage = numRows / dimPage - 1
+    num_rows = cur.fetchone()[0]
+    last_page = math.ceil(num_rows / dimPage - 1)
     cur.close()
-    return lastPage
+    return num_rows,last_page

@@ -2,10 +2,10 @@
 connections:
 - name: localhost
   type: MongoDB
-  connectionURI: mongodb://localhost:27017/
+  connection_uri: mongodb://localhost:27017/
 - name: "Localhost"
   type: PostgreSQL
-  connectionURI: postgresql://testuser:testpassword@localhost:5432/postgres
+  connection_uri: postgresql://testuser:testpassword@localhost:5432/testdb
 - name: "Localhost"
   type: Hive/Kyuubi
   host: localhost

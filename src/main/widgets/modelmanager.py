@@ -44,12 +44,12 @@ def addConnections():
         for connection in retrieveConnections():
             name = connection.name
             type = connection.type
-            uri = connection.connectionURI
+            uri = connection.connection_uri
             host = connection.host
             port = connection.port
             connectionItem = QStandardItem(f"{name} -> {type.name}")
             connectionItem.setData({'levelTag' : 'connections'
-            ,'connectionURI' : uri
+            ,'connection_uri' : uri
             ,'host' : host
             ,'port' : port
             ,'type' : type})

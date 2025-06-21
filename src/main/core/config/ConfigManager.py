@@ -11,7 +11,7 @@ def retrieveConnections() -> list:
         connections = []
         if isinstance(values, list):
             for value in values:
-                connections.append(Connection(value))
+                connections.append( Connection(value))
         else:
             print("Malformed connections field")
     except ConnectionResetError as e:

@@ -14,19 +14,32 @@ class PSTabularActionDef(AbstractDriver):
             self._actions[getattr(method, 'action_type')] = method
         
 
+    @ContentAction(action_type=ActionTypeEnum.FIRST_PAGE)
+    def _retrieveFirstDocuments(self, ctx: dict):
+        print(ctx)
+        return getRows(ctx, 0)
+        
+
     @ContentAction(action_type=ActionTypeEnum.NEXT_PAGE)
     def _retrieveMoreDocuments(self, ctx: dict):
-        nextPage = ctx['cur_page'] + 1
-        if nextPage <= ctx['last_page']:
-            return getRows(ctx, nextPage)
+        print(ctx)
+        next_page = ctx['cur_page'] + 1
+        if next_page <= ctx['last_page']:
+            return getRows(ctx, next_page)
         
     
     @ContentAction(action_type=ActionTypeEnum.PREVIOUS_PAGE)
     def _retrievePreviousDocuments(self, ctx: dict):
-        curPage = ctx['cur_page']
-        if curPage > 0:
-            prevPage = curPage - 1
-            return getRows(ctx, curPage=prevPage)
+        print(ctx)
+        cur_page = ctx['cur_page']
+        if cur_page > 0:
+            prev_page = cur_page - 1
+            return getRows(ctx, cur_page=prev_page)
         else:
             return None
+        
 
+    @ContentAction(action_type=ActionTypeEnum.LAST_PAGE)
+    def _retrieveLastDocuments(self, ctx: dict):
+        last_page = ctx['last_page']
+        return getRows(ctx, last_page)

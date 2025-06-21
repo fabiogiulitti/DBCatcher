@@ -23,7 +23,10 @@ def executeTreeNav(ctx: dict):
     driver: AbstractDbDriver = drivers[ctx['type'].name]
     obj: car.AbstractTreeAction = driver.getObject(ObjectTypeEnum.DB_TREE)
     path = ctx.get("path", [''])
-    return obj.executeNavAction(ctx['levelTag'], path[-1], ctx)
+    result = obj.executeNavAction(ctx['levelTag'], path[-1], ctx)
+    if not result:
+        log.info("Expansion [%s] on tree level [%s] not found", path[-1], ctx['levelTag'])
+    return result
 
 
 def executeTreeAction(ctx: dict) -> Optional[abstractdataresponse.AbstractDataResponse]:

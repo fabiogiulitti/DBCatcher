@@ -16,6 +16,10 @@ class DataResponse(AbstractDataResponse):
     _query: str = ib()
     _metaData: dict = ib()
 
+    @property
+    def rows(self):
+        return self._rows
+
     def toJson(self):
         result = list()
         for row in self._rows:

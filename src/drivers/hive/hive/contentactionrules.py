@@ -25,7 +25,7 @@ class PSActionDef(AbstractDriver):
         curPage = ctx['cur_page']
         if curPage > 0:
             prevPage = curPage - 1
-            return getRows(ctx, curPage=prevPage)
+            return getRows(ctx, cur_page=prevPage)
         else:
             return None
 
