@@ -3,6 +3,10 @@ name: Build Windows Package with Poetry and PyInstaller
 on:
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build-windows:
     runs-on: windows-latest
