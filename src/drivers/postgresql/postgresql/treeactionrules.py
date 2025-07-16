@@ -1,10 +1,7 @@
 import math
-from os import path
-from sys import exception
 import psycopg2
-from requests import patch
 from main.core.ActonTypeEnum import ActionTypeEnum
-from main.core.driver.abstractdataresponse import AbstractDataResponse
+from main.core.driver.abstractdataresponse import AbstractDataResponse, TextResponse
 from main.core.treepath import ItemAction, TreePath,make_session_id, references
 from json import dumps
 from main.widgets.ContentData import ContentData, ContentDataModel
@@ -266,6 +263,102 @@ class PSTreeActions(AbstractTreeAction):
     def retrieveFirstRowsMatView(self, ctx: dict):
         return getRows(ctx)
     
+    @ItemAction(node_type_in='tables', action_type = ActionTypeEnum.DDL)
+    def retrieveTableDDL(self, ctx: dict):
+        id = ctx['sessionID']
+        try:
+            schema_name = ctx['path'][-3]
+            table_name = ctx['path'][-1]
+
+            conn = references[id]['client']
+            cur = conn.cursor()
+            query = f"""
+                SELECT column_name, data_type, character_maximum_length, is_nullable, column_default
+                FROM information_schema.columns
+                WHERE table_schema = '{schema_name}' AND table_name = '{table_name}'
+                ORDER BY ordinal_position;
+            """
+            cur.execute(query)
+            columns = cur.fetchall()
+
+            if not columns:
+                return f"-- Tabella {schema_name}.{table_name} non trovata."
+
+            ddl = [f'CREATE TABLE {schema_name}."{table_name}" (']
+            column_defs = []
+            for col in columns:
+                col_name, data_type, char_max_len, is_nullable, col_default = col
+                col_def = f'    "{col_name}" {data_type}'
+                if char_max_len:
+                    col_def += f'({char_max_len})'
+                if is_nullable == 'NO':
+                    col_def += ' NOT NULL'
+                if col_default:
+                    col_def += f' DEFAULT {col_default}'
+                column_defs.append(col_def)
+    
+            ddl.append(",\n".join(column_defs))
+            ddl.append(');')
+            result = "\n".join(ddl)
+        except Exception:
+            cur.close()
+            conn.rollback()
+            raise
+    
+        return TextResponse(result, query, ctx)
+    
+    @ItemAction(node_type_in='views', action_type = ActionTypeEnum.DDL)
+    def retrieveViewDDL(self, ctx: dict):
+        return self._retrieveDDL(ctx, 'view')
+
+    @ItemAction(node_type_in='materialized views', action_type = ActionTypeEnum.DDL)
+    def retrieveMaterializedViewDDL(self, ctx: dict):
+        return self._retrieveDDL(ctx, 'materilized view')
+    
+    @ItemAction(node_type_in='functions', action_type = ActionTypeEnum.DDL)
+    def retrieveFunctionDDL(self, ctx: dict):
+        id = ctx['sessionID']
+        try:
+            schema_name = ctx['path'][-3]
+            function_name = ctx['path'][-1]
+
+            conn = references[id]['client']
+            cur = conn.cursor()
+            query = f"""
+                SELECT pg_get_functiondef(p.oid)
+                FROM pg_proc p
+                JOIN pg_namespace n ON n.oid = p.pronamespace
+                WHERE n.nspname = '{schema_name}' AND p.proname = '{function_name}'
+            """
+            cur.execute(query) 
+            result = cur.fetchone()
+
+            return TextResponse(result[0], query, ctx)
+        except Exception as e:
+            cur.close()
+            conn.rollback()
+            raise
+
+    def _retrieveDDL(self, ctx: dict, view_type):
+        id = ctx['sessionID']
+        try:
+            schema_name = ctx['path'][-3]
+            view_name = ctx['path'][-1]
+
+            conn = references[id]['client']
+            cur = conn.cursor()
+            query = f"SELECT pg_get_viewdef('{schema_name}.{view_name}'::regclass, true);"
+        
+            cur.execute(query,)
+            view_definition = cur.fetchone()[0]
+            result = f"CREATE {view_type} {schema_name}.{view_name} AS\n{view_definition};"
+            return TextResponse(result, query, ctx)
+        except Exception as e:
+            cur.close()
+            conn.rollback()
+            raise
+
+
 def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
     id = ctx['sessionID']
     schema_name = ctx['path'][1]

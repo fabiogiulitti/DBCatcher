@@ -8,6 +8,8 @@ from main.widgets.model.viewtypeenum import ViewTypeEnum
 class ActionTypeEnum(Enum):
     EXPAND = 'expand'
     CLICK = 'click'
+    EDIT_CONNECTION = 'edit_connection'
+    DDL = 'ddl'
     FIRST_PAGE = 'first_page'
     PREVIOUS_PAGE = 'previous_page'
     NEXT_PAGE = 'next_page'

@@ -1,10 +1,10 @@
-from PyQt6.QtWidgets import QTreeView, QMessageBox, QWidget
-from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal, QObject
+from PyQt6.QtWidgets import QTreeView, QMessageBox, QWidget, QMenu
+from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal, QObject, QItemSelectionModel
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.manager import executeTreeAction
 from main.widgets.modelmanager import ModelManager
 from main.core.ActonTypeEnum import ActionTypeEnum
-from PyQt6.QtGui import QKeyEvent
+from PyQt6.QtGui import QKeyEvent, QAction, QContextMenuEvent
 from threading import Thread
 
 from main.widgets.utils import DBCSignals
@@ -45,7 +45,7 @@ class DbTreeView(QTreeView):
     def asynchRefresh(self, ctx):
         try:
             response: AbstractDataResponse = executeTreeAction(ctx)
-            if response is not None:
+            if response:
                 self._dbc_signals.table_loaded.emit(response)
         except Exception as e:
             self._wrong_action.emit(self, "Error", str(e))
@@ -66,3 +66,24 @@ class DbTreeView(QTreeView):
         except Exception as e:
             QMessageBox.information(self, "Error", str(e))
 
+
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        index = self.currentIndex()
+        model = index.model()
+        assert model is not None
+        data = model.itemData(index)
+        ctx = data[257]
+        print(ctx)
+        menu = QMenu(self)
+        if ctx['levelTag'] == 'connections':
+    #        actionCsv.triggered.connect(lambda: self.fromModelToJson(self.model()))
+            menu.addAction("New connection...")
+            menu.addAction("Edit connection...")
+        elif ctx['levelTag'] in ['tables', 'views', 'materialized views']:
+            action_definition = QAction("Show definition...", self)
+            menu.addAction(action_definition)
+
+        if menu.actions():
+            menu.focusNextChild()
+            menu.exec(event.globalPos())
+            

@@ -57,7 +57,6 @@ class ContentTableView(QTableView):
         menu.setFocus()
 
     def fromModelToJson(self, model: QAbstractItemModel | None):
-
         if isinstance(model, QStandardItemModel):
 
             out = io.StringIO()
@@ -81,5 +80,6 @@ class ContentTableView(QTableView):
             out.close()
 
             cb = QGuiApplication.clipboard()
+            assert cb
             cb.setText(csvStr)
 
