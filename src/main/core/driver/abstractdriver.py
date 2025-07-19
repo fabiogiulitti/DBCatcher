@@ -22,7 +22,7 @@ class AbstractTreeAction:
     def executeAction(self, node_type_in: str, action_type: ActionTypeEnum, ctx: dict):
         if action_type is ActionTypeEnum.EXPAND:
             return self._navActions[node_type_in](ctx)
-        elif action_type is ActionTypeEnum.CLICK and node_type_in in self._itemActions:
+        elif node_type_in in self._itemActions and action_type in self._itemActions[node_type_in]:
             return self._itemActions[node_type_in][action_type](ctx)
         else:
             return None

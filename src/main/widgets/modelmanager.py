@@ -7,36 +7,38 @@ from main.widgets.utils import createItem
 
 class ModelManager:
 
-    def __init__(self) -> None:
-         self.model = None
+    def __init__(self, model: QStandardItemModel) -> None:
+         self._model = model
 
     @staticmethod
     def createBaseModel():
         model = QStandardItemModel()
         model.setHorizontalHeaderLabels(['Connections'])
-        rootItem: QStandardItem = model.invisibleRootItem()
-        rootItem.appendRows(addConnections())
-        manager = ModelManager()
-        manager.model = model
+        root_item: Optional[QStandardItem] = model.invisibleRootItem()
+        assert root_item
+        root_item.appendRows(addConnections())
+        manager = ModelManager(model)
         return manager
     
     def getModel(self):
-         return self.model
+         return self._model
 
 
     def expandModel(self, index):
-        item = self.model.itemFromIndex(index)
+        item = self._model.itemFromIndex(index)
+        assert item
         data = index.model().itemData(index)
         node: Node = executeTreeNav(data[257])
         addNodes(item,node)
 
     def collapseModel(self, index):
-        item: QStandardItem = self.model.itemFromIndex(index)
+        item: Optional[QStandardItem] = self._model.itemFromIndex(index)
+        assert item
         item.removeRows(0, item.rowCount() - 1)
         
 def addNodes(parent: QStandardItem, node: Node):
         parent.removeRow(0)
-        parent.appendRows(map(lambda i: createItem(parent.data(), i, node), node.items))
+        parent.appendRows(map(lambda it: createItem(parent.data(), it, node), node.items))
 
 
 def addConnections():

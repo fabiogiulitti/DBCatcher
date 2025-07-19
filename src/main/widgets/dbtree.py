@@ -1,7 +1,10 @@
+from pydoc import TextRepr
+from typing import Optional
 from PyQt6.QtWidgets import QTreeView, QMessageBox, QWidget, QMenu
 from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal, QObject, QItemSelectionModel
-from main.core.driver.abstractdataresponse import AbstractDataResponse
-from main.core.manager import executeTreeAction
+from main.core.driver.abstractdataresponse import AbstractDataResponse, TextResponse
+from main.core.manager import executeDialogAction, executeTreeAction
+from main.widgets import dialog
 from main.widgets.modelmanager import ModelManager
 from main.core.ActonTypeEnum import ActionTypeEnum
 from PyQt6.QtGui import QKeyEvent, QAction, QContextMenuEvent
@@ -44,7 +47,7 @@ class DbTreeView(QTreeView):
 
     def asynchRefresh(self, ctx):
         try:
-            response: AbstractDataResponse = executeTreeAction(ctx)
+            response: Optional[AbstractDataResponse] = executeTreeAction(ctx)
             if response:
                 self._dbc_signals.table_loaded.emit(response)
         except Exception as e:
@@ -73,17 +76,30 @@ class DbTreeView(QTreeView):
         assert model is not None
         data = model.itemData(index)
         ctx = data[257]
-        print(ctx)
         menu = QMenu(self)
         if ctx['levelTag'] == 'connections':
     #        actionCsv.triggered.connect(lambda: self.fromModelToJson(self.model()))
             menu.addAction("New connection...")
             menu.addAction("Edit connection...")
-        elif ctx['levelTag'] in ['tables', 'views', 'materialized views']:
+        elif ctx['levelTag'] in ['tables', 'views', 'materialized views', 'functions']:
             action_definition = QAction("Show definition...", self)
+            action_definition.triggered.connect(self.showDialog)
             menu.addAction(action_definition)
 
         if menu.actions():
             menu.focusNextChild()
             menu.exec(event.globalPos())
             
+    def showDialog(self, ctx):
+        try:
+            index = self.currentIndex()
+            model = index.model()
+            assert model is not None
+            data = model.itemData(index)
+            ctx = data[257].copy()
+            ctx['action_type'] = ActionTypeEnum.DDL
+            response: Optional[TextResponse] = executeDialogAction(ctx)
+            if response:
+                dialog.ModalDialog(self, response.toPlainText().results, self._dbc_signals)
+        except Exception as e:
+            self._wrong_action.emit(self, "Error", str(e))

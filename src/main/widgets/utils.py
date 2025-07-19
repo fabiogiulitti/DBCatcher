@@ -6,7 +6,7 @@ from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.treepath import Node
 
 
-def createItem(parentData: dict, text: str, node: Node) -> QStandardItem:
+def createItem(parentData: dict, text, node: Node) -> QStandardItem:
     item = QStandardItem(text)
     
     data = {'levelTag' : node.nodeType

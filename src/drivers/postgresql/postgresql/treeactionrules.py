@@ -1,5 +1,5 @@
 import math
-import psycopg2
+from platform import node
 from main.core.ActonTypeEnum import ActionTypeEnum
 from main.core.driver.abstractdataresponse import AbstractDataResponse, TextResponse
 from main.core.treepath import ItemAction, TreePath,make_session_id, references
@@ -7,16 +7,17 @@ from json import dumps
 from main.widgets.ContentData import ContentData, ContentDataModel
 from main.core.driver.abstractdriver import AbstractTreeAction
 from psycopg2 import connect, extensions
-from attr import ib, s
+from attr import define, ib, s
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from textwrap import dedent
 
-@s
+
+@define
 class DataResponse(AbstractDataResponse):
-    _cols: list = ib()
-    _rows: list = ib()
-    _query: str = ib()
-    _metaData: dict = ib()
+    _cols: list
+    _rows: list
+    _query: str
+    _metaData: dict
 
     @property
     def rows(self):
@@ -57,7 +58,10 @@ class PSTreeActions(AbstractTreeAction):
         super().__init__()
         methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'action_type')]
         for method in methods:
-            self._itemActions[getattr(method, 'node_type_in')] = {getattr(method, 'action_type') : method}
+            node_type_in = getattr(method, 'node_type_in')
+            sub_actions = self._itemActions.get(node_type_in, {})
+            sub_actions[getattr(method, 'action_type')] = method
+            self._itemActions[node_type_in] = sub_actions
         methods = [self.__getattribute__(n) for n in self.__dir__() if hasattr(getattr(self, n), 'node_type_out')]
         for method in methods:
             nodeTypeIn = getattr(method, 'node_type_in')
@@ -151,7 +155,7 @@ class PSTreeActions(AbstractTreeAction):
         cur.close()
         return (result, id)
     
-    @TreePath(node_type_in='schema_obj_hold', node_type_out='materialized views', holder_type='functions')
+    @TreePath(node_type_in='schema_obj_hold', node_type_out='functions', holder_type='functions')
     def retrieveFunctions(self, ctx: dict):
         schema = ctx['path'][-2]
 
@@ -320,7 +324,7 @@ class PSTreeActions(AbstractTreeAction):
         id = ctx['sessionID']
         try:
             schema_name = ctx['path'][-3]
-            function_name = ctx['path'][-1]
+            function_name = ctx['path'][-1].split(' ')[0]
 
             conn = references[id]['client']
             cur = conn.cursor()
@@ -332,7 +336,8 @@ class PSTreeActions(AbstractTreeAction):
             """
             cur.execute(query) 
             result = cur.fetchone()
-
+            
+    
             return TextResponse(result[0], query, ctx)
         except Exception as e:
             cur.close()

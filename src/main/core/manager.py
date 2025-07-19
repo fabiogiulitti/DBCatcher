@@ -38,6 +38,14 @@ def executeTreeAction(ctx: dict) -> Optional[abstractdataresponse.AbstractDataRe
     return result
 
 
+def executeDialogAction(ctx: dict) -> Optional[abstractdataresponse.TextResponse]:
+    driver: AbstractDbDriver = drivers[ctx['type'].name]
+    obj: car.AbstractTreeAction = driver.getObject(ObjectTypeEnum.DB_TREE)
+    result = obj.executeAction(ctx['levelTag'], ctx['action_type'], ctx)
+    if not result:
+        log.info("Action [%s] on tree level [%s] not found", ctx['action_type'], ctx['levelTag'])
+    return result
+
 def executeCntAction(ctx: dict):    
     driver: AbstractDbDriver = drivers[ctx['type'].name]
     obj: car.AbstractDriver = driver.getObject(ctx['action_obj'])
