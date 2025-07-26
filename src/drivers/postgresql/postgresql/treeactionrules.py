@@ -398,7 +398,7 @@ def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
         return DataResponse(cols, rows, query, metadata)
     except Exception as e:
         cur.close()
-        conn.rollvack()
+        conn.rollback()
         raise e
 
 

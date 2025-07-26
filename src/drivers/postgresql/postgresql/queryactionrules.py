@@ -47,5 +47,5 @@ def executeQuery(ctx, dim_page=200):
         return DataResponse(cols, rows, query, metadata)
     except Exception as e:
         cur.close()
-        conn.rollvack()
+        conn.rollback()
         raise e
