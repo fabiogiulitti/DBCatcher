@@ -1,4 +1,5 @@
-from textwrap import dedent
+from logging import raiseExceptions
+import re
 from main.core.treepath import ContentAction
 from main.core.treepath import references
 from main.core.driver.abstractdriver import AbstractDriver
@@ -17,16 +18,34 @@ class PSQueryActionDef(AbstractDriver):
 
     @ContentAction(action_type=ActionTypeEnum.CTRL_ENTER)
     def _executeQuery(self, ctx: dict):
-        id = ctx['sessionID']
+        return executeQuery(ctx)
 
-        conn = references[id]['client']
-    
+
+def executeQuery(ctx, dim_page=200):
+    id = ctx['sessionID']
+
+    conn = references[id]['client']
+
+    try:
         cur = conn.cursor()
-        query = ctx['query']
+        query: str = ctx['query']
+        match = re.search(r'\bLIMIT\s+\d+', query, flags=re.IGNORECASE)
+        if match:
+            dim_page = int(match.group().split(' ')[1])
+        else:
+            query = f"{query} LIMIT {dim_page}"
+
         cur.execute(query)
         rows = cur.fetchall()
         cols = [desc[0] for desc in cur.description]
         cur.close()
-    
-        metaData = ctx.copy()
-        return DataResponse(cols, rows, query, metaData)
+        metadata = ctx.copy()
+        metadata['cur_page'] = 0
+        metadata['dim_page'] = dim_page
+        metadata['last_page'] = 0
+        metadata.pop("tot_result", 0)
+        return DataResponse(cols, rows, query, metadata)
+    except Exception as e:
+        cur.close()
+        conn.rollvack()
+        raise e

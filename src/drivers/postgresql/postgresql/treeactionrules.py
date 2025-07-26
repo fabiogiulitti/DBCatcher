@@ -370,31 +370,36 @@ def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
     tab_name = ctx['path'][-1]
 
     conn = references[id]['client']
-    skip = cur_page * dim_page
+    try:
+        skip = cur_page * dim_page
 
-    tot_result,last_page = getTableCount(dim_page, schema_name, tab_name, conn)
-    
-    cur: extensions.cursor = conn.cursor()
-    query = dedent(f"""
-                   SELECT *
-                   FROM {schema_name}.{tab_name}
-                   offset {skip}
-                   limit {dim_page}
-        """).lstrip()
-    
-    cur.execute(query)
-    
-    assert cur.description
-    cols = [desc[0] for desc in cur.description]
-    rows = cur.fetchall()
-    cur.close()
-    
-    metadata = ctx.copy()
-    metadata['cur_page'] = cur_page
-    metadata['last_page'] = last_page
-    metadata['dim_page'] = dim_page
-    metadata['tot_result'] = tot_result
-    return DataResponse(cols, rows, query, metadata)
+        tot_result,last_page = getTableCount(dim_page, schema_name, tab_name, conn)
+        
+        cur: extensions.cursor = conn.cursor()
+        query = dedent(f"""
+                    SELECT *
+                    FROM {schema_name}.{tab_name}
+                    offset {skip}
+                    limit {dim_page}
+            """).lstrip()
+        
+        cur.execute(query)
+        
+        assert cur.description
+        cols = [desc[0] for desc in cur.description]
+        rows = cur.fetchall()
+        cur.close()
+        
+        metadata = ctx.copy()
+        metadata['cur_page'] = cur_page
+        metadata['last_page'] = last_page
+        metadata['dim_page'] = dim_page
+        metadata['tot_result'] = tot_result
+        return DataResponse(cols, rows, query, metadata)
+    except Exception as e:
+        cur.close()
+        conn.rollvack()
+        raise e
 
 
 def getTableCount(dimPage, schemaName, tabName, conn):
