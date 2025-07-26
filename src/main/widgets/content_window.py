@@ -16,7 +16,7 @@ from main.widgets.utils import DBCSignals
 
 
 class ContentWindow(QWidget):
-    wrongQuery = pyqtSignal(QWidget, str, str)
+    wrong_action = pyqtSignal(QWidget, str, str)
 
     def __init__(self, parent, dbc_signals: DBCSignals):
         super().__init__(parent)
@@ -78,11 +78,9 @@ class ContentWindow(QWidget):
         # Signals binding
         dbc_signals.table_loaded.connect(self.refreshContent)
         dbc_signals.results_updated.connect(self.refreshContent)
+        dbc_signals.executeQueryRequested.connect(lambda ctx: Thread(target=self.executeAction, args=(ctx,)).start())
         self._dbc_signals = dbc_signals
-        
-
-        # Signals slots connections
-        dbc_signals.executeQueryRequested.connect(lambda ctx: Thread(target=self.executeQuery, args=(ctx,)).start())
+        self.wrong_action.connect(QMessageBox.information)
         self._execute_btn.clicked.connect(self._on_execute_query)
         self._first_page_btn.clicked.connect(self._on_first_page)
         self._prev_page_btn.clicked.connect(self._on_prev_page)
@@ -111,7 +109,7 @@ class ContentWindow(QWidget):
             elif self._driver_type.selected_view == ViewTypeEnum.TREE:
                 ctx['action_obj'] = ObjectTypeEnum.TREE
 
-            self.executeQuery(ctx)
+            self.executeAction(ctx)
             
 
     def _on_prev_page(self):
@@ -127,7 +125,7 @@ class ContentWindow(QWidget):
             elif self._driver_type.selected_view == ViewTypeEnum.TREE:
                 ctx['action_obj'] = ObjectTypeEnum.TREE
 
-            self.executeQuery(ctx)
+            self.executeAction(ctx)
 
 
     def _on_next_page(self):
@@ -143,7 +141,7 @@ class ContentWindow(QWidget):
             elif self._driver_type.selected_view == ViewTypeEnum.TREE:
                 ctx['action_obj'] = ObjectTypeEnum.TREE
 
-            self.executeQuery(ctx)
+            self.executeAction(ctx)
             
 
     def _on_last_page(self):
@@ -159,7 +157,7 @@ class ContentWindow(QWidget):
             elif self._driver_type.selected_view == ViewTypeEnum.TREE:
                 ctx['action_obj'] = ObjectTypeEnum.TREE
 
-            self.executeQuery(ctx)
+            self.executeAction(ctx)
             
 
     def _update_pagination_controls(self):
@@ -211,16 +209,10 @@ class ContentWindow(QWidget):
             self._last_page = 0
         self._update_pagination_controls()
 
-    def executeQuery(self, ctx):
+    def executeAction(self, ctx):
         try:
-            print("step 0")
             response: AbstractDataResponse = executeCntAction(ctx)
-            print("step 1")
             if response is not None:
-                print("step 2")
                 self._dbc_signals.results_updated.emit(response)
         except Exception as e:
-            self.wrongQuery.emit(self, "Error", str(e))
-            
-
-        
+            self.wrong_action.emit(self, "Error", str(e))
