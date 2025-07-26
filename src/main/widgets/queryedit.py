@@ -8,17 +8,17 @@ from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.manager import executeCntAction
 from main.widgets.ContentData import ContentData
 from main.core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
+from main.widgets.utils import DBCSignals
 
 class QueryEdit(QTextEdit):
 
-    def __init__(self, parent) -> None:
+    def __init__(self, parent, dbc_signals: DBCSignals) -> None:
         super().__init__(parent)
 
         self.setTabChangesFocus(True)
         self._metadata = dict()
 
-        self.custom_signals = QueryEditSignals()
-        self.custom_signals.wrong_query.connect(QMessageBox.information)
+        self.dbc_signals = dbc_signals
 
 
     def setMetaData(self, metaData: dict):
@@ -30,20 +30,7 @@ class QueryEdit(QTextEdit):
             ctx['action_type'] = ActionTypeEnum.CTRL_ENTER
             ctx['action_obj'] = ObjectTypeEnum.QUERY_EDIT
             ctx['query'] = self.toPlainText()
-            thread = Thread(target=self.asynchRefresh, args=(ctx,))
-            thread.start()
+            self.dbc_signals.executeQueryRequested.emit(ctx)
 
         super().keyPressEvent(event)
 
-    def asynchRefresh(self, ctx):
-        try:
-            response: AbstractDataResponse = executeCntAction(ctx)
-            if response is not None:
-                self.custom_signals.results_updated.emit(response)
-        except Exception as e:
-            self.custom_signals.wrong_query.emit(self, "Error", str(e))
-
-
-class QueryEditSignals(QObject):
-    results_updated = pyqtSignal(AbstractDataResponse)
-    wrong_query = pyqtSignal(QWidget, str, str)

@@ -29,6 +29,8 @@ class DBCSignals(QObject):
     status_notify  = pyqtSignal(str, str)
     table_loaded = pyqtSignal(AbstractDataResponse)
     show_detail = pyqtSignal(str, str)
+    executeQueryRequested = pyqtSignal(dict)
+    results_updated = pyqtSignal(AbstractDataResponse)
 
 
     def __init__(self):

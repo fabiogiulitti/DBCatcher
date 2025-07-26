@@ -1,6 +1,5 @@
 from concurrent.futures import thread
-import logging
-import threading
+from threading import Thread
 from typing import Optional
 from PyQt6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QSpacerItem, QLabel, QMessageBox, QHBoxLayout, QPushButton
 from PyQt6.QtCore import pyqtSignal
@@ -17,7 +16,6 @@ from main.widgets.utils import DBCSignals
 
 
 class ContentWindow(QWidget):
-    executeQueryRequested = pyqtSignal(dict)
     wrongQuery = pyqtSignal(QWidget, str, str)
 
     def __init__(self, parent, dbc_signals: DBCSignals):
@@ -26,7 +24,7 @@ class ContentWindow(QWidget):
         self._current_page = 1
 
         self._last_page = 1
-        self._query_txt = QueryEdit(self)
+        self._query_txt = QueryEdit(self, dbc_signals)
         query_header_layout = QHBoxLayout()
         query_header_layout.addWidget(QLabel("Query"))
         query_header_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
@@ -37,12 +35,12 @@ class ContentWindow(QWidget):
         cnt_layout.addLayout(query_header_layout)
         cnt_layout.addWidget(self._query_txt)
 
-        self.content_txt = ContenTextEdit(self, self._query_txt, self.executeQueryRequested)
+        self.content_txt = ContenTextEdit(self, self._query_txt, dbc_signals.executeQueryRequested)
         self.content_txt.setVisible(False)
         self.content_tab = ContentTableView(self, self._query_txt)
         self.content_tab.setVisible(False)
         self.content_tree = ContentTreeView(self, self._query_txt)
-        self.content_tree.execute_query_requested = self.executeQueryRequested
+        self.content_tree.execute_query_requested = dbc_signals.executeQueryRequested
         self.content_tree.setVisible(False)
         cnt_layout.addSpacerItem(QSpacerItem(100, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         cnt_layout.addWidget(QLabel("Result data"))
@@ -78,12 +76,13 @@ class ContentWindow(QWidget):
         self._update_pagination_controls()
 
         # Signals binding
-        dbc_signals.table_loaded.connect(self.refresh_content)
+        dbc_signals.table_loaded.connect(self.refreshContent)
+        dbc_signals.results_updated.connect(self.refreshContent)
         self._dbc_signals = dbc_signals
-        self._query_txt.custom_signals.results_updated.connect(self.refresh_content)
+        
 
         # Signals slots connections
-        self.executeQueryRequested.connect(self.executeQuery)
+        dbc_signals.executeQueryRequested.connect(lambda ctx: Thread(target=self.executeQuery, args=(ctx,)).start())
         self._execute_btn.clicked.connect(self._on_execute_query)
         self._first_page_btn.clicked.connect(self._on_first_page)
         self._prev_page_btn.clicked.connect(self._on_prev_page)
@@ -97,7 +96,7 @@ class ContentWindow(QWidget):
         ctx['action_type'] = ActionTypeEnum.CTRL_ENTER
         ctx['action_obj'] = ObjectTypeEnum.QUERY_EDIT
         ctx['query'] = self._query_txt.toPlainText()
-        self.executeQueryRequested.emit(ctx)
+        self._dbc_signals.executeQueryRequested.emit(ctx)
 
     def _on_first_page(self):
         if self._current_page > 0:
@@ -173,7 +172,7 @@ class ContentWindow(QWidget):
         self._next_page_btn.setEnabled(not is_last_page)
         self._last_page_btn.setEnabled(not is_last_page)
 
-    def refresh_content(self, response: AbstractDataResponse):
+    def refreshContent(self, response: AbstractDataResponse):
         if response:
             self._response = response
         assert self._response
@@ -214,10 +213,14 @@ class ContentWindow(QWidget):
 
     def executeQuery(self, ctx):
         try:
+            print("step 0")
             response: AbstractDataResponse = executeCntAction(ctx)
+            print("step 1")
             if response is not None:
-                self.refresh_content(response)
+                print("step 2")
+                self._dbc_signals.results_updated.emit(response)
         except Exception as e:
             self.wrongQuery.emit(self, "Error", str(e))
+            
 
         

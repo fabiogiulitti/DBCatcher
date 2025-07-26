@@ -58,5 +58,5 @@ class DBCMenuBar(QMenuBar):
 
     def actionTriggered(self, action):
         self._content_win._driver_type.setSelectedView(ViewTypeEnum[action.text().upper()])
-        self._content_win.refresh_content(None)
+        self._content_win.refreshContent(None)
 
