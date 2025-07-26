@@ -25,7 +25,9 @@ jobs:
       uses: snok/install-poetry@v1
 
     - name: Install project dependencies
-      run: poetry install --no-interaction
+      run: |
+        poetry install --no-interaction
+        poetry lock
 
     - name: Build executable with PyInstaller
       run: |
