@@ -16,6 +16,7 @@ class ActionTypeEnum(Enum):
     LAST_PAGE = 'last_page'
     CTRL_ENTER = 'ctrl_enter'
     EXECUTE = 'execute'
+    CANCEL_QUERY = 'cancel_query'
 
 
 class ObjectTypeEnum(Enum):
