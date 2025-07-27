@@ -13,7 +13,7 @@ from threading import Thread
 from main.widgets.utils import DBCSignals
 
 class DbTreeView(QTreeView):
-    _wrong_action = pyqtSignal(QWidget, str, str)
+    wrong_action = pyqtSignal(QWidget, str, str)
 
     def __init__(self, parent, dbc_signals: DBCSignals) -> None:
         super().__init__(parent)
@@ -24,7 +24,7 @@ class DbTreeView(QTreeView):
         self.collapsed.connect(self.on_item_collapsed)
         self.show()
 
-        self._wrong_action.connect(QMessageBox.information)
+        self.wrong_action.connect(QMessageBox.information)
         self._dbc_signals = dbc_signals
 
 
@@ -51,7 +51,7 @@ class DbTreeView(QTreeView):
             if response:
                 self._dbc_signals.table_loaded.emit(response)
         except Exception as e:
-            self._wrong_action.emit(self, "Error", str(e))
+            self.wrong_action.emit(self, "Error", str(e))
         
 
     def on_item_expanded(self, index: QModelIndex):
@@ -61,7 +61,7 @@ class DbTreeView(QTreeView):
         try:
             self.modelManager.expandModel(index)
         except Exception as e:
-            self._wrong_action.emit(self, "Error", str(e))
+            self.wrong_action.emit(self, "Error", str(e))
 
     def on_item_collapsed(self, index: QModelIndex):
         try:
@@ -102,4 +102,4 @@ class DbTreeView(QTreeView):
             if response:
                 dialog.ModalDialog(self, response.toPlainText().results, self._dbc_signals)
         except Exception as e:
-            self._wrong_action.emit(self, "Error", str(e))
+            self.wrong_action.emit(self, "Error", str(e))

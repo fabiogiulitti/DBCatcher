@@ -1,3 +1,5 @@
+import math
+from re import I
 from main.core.ActonTypeEnum import ActionTypeEnum
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.treepath import ItemAction, TreePath,make_session_id, references
@@ -178,41 +180,46 @@ class PSTreeActions(AbstractTreeAction):
         return getRows(ctx)
 
 
-def getRows(ctx: dict, curPage: int = 0, dimPage: int = 50):
+def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 50):
     id = ctx['sessionID']
     databaseName = ctx['path'][1]
     tabName = ctx['path'][-1]
 
     conn = references[id]['client']
-    skip = curPage * dimPage
+#    skip = curPage * dimPage
 
-    lastPage = getTableCount(dimPage, databaseName, tabName, conn)
+#    tot_result,last_page = getTableCount(dimPage, databaseName, tabName, conn)
+    tot_result,last_page = (None, 0)
     
     cur = conn.cursor()
+    references[id]['cursor'] = cur
     query = dedent(f"""
                    SELECT *
                    FROM {databaseName}.{tabName}
-                   limit {dimPage}
+                   limit {dim_page}
         """).lstrip()
 
     cur.execute(query)
     rows = cur.fetchall()
     cols = [desc[0] for desc in cur.description]
     cur.close()
+    references[id].pop('cursor')
     
-    metaData = ctx.copy()
-    metaData['cur_page'] = curPage
-    metaData['last_page'] = lastPage
-    return DataResponse(cols, rows, query, metaData)
+    meta_data = ctx.copy()
+    meta_data['cur_page'] = cur_page
+    meta_data['dim_page'] = dim_page
+    meta_data['last_page'] = last_page
+    meta_data['tot_result'] = tot_result
+    return DataResponse(cols, rows, query, meta_data)
 
 
-def getTableCount(dimPage, databaseName, tabName, conn):
+def getTableCount(dim_page, database_name, tab_name, conn):
     cur = conn.cursor()
     cur.execute(f"""
                 select count(*) as numRecords
-                from {databaseName}.{tabName}
+                from {database_name}.{tab_name}
             """)
-    numRows = cur.fetchone()[0]
-    lastPage = numRows / dimPage - 1
+    num_rows = cur.fetchone()[0]
+    last_page = math.ceil(num_rows / dim_page - 1)
     cur.close()
-    return lastPage
+    return num_rows, last_page

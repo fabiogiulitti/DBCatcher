@@ -29,7 +29,10 @@ class ContentWindow(QWidget):
         query_header_layout.addWidget(QLabel("Query"))
         query_header_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
         self._execute_btn = QPushButton("Execute Query")
+        self._cancel_btn = QPushButton("Cancel Query")
         query_header_layout.addWidget(self._execute_btn)
+        query_header_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
+        query_header_layout.addWidget(self._cancel_btn)
 
         cnt_layout = QVBoxLayout()
         cnt_layout.addLayout(query_header_layout)
@@ -82,6 +85,7 @@ class ContentWindow(QWidget):
         self._dbc_signals = dbc_signals
         self.wrong_action.connect(QMessageBox.information)
         self._execute_btn.clicked.connect(self._on_execute_query)
+        self._cancel_btn.clicked.connect(self._on_cancel_query)
         self._first_page_btn.clicked.connect(self._on_first_page)
         self._prev_page_btn.clicked.connect(self._on_prev_page)
         self._next_page_btn.clicked.connect(self._on_next_page)
@@ -94,7 +98,20 @@ class ContentWindow(QWidget):
         ctx['action_type'] = ActionTypeEnum.CTRL_ENTER
         ctx['action_obj'] = ObjectTypeEnum.QUERY_EDIT
         ctx['query'] = self._query_txt.toPlainText()
+        self._dbc_signals.status_notify.emit("Executing query", "")
         self._dbc_signals.executeQueryRequested.emit(ctx)
+        self._cancel_btn.setEnabled(True)
+
+    def _on_cancel_query(self):
+        assert self._response
+        ctx = self._response.metadata()
+        ctx['action_type'] = ActionTypeEnum.CANCEL_QUERY
+        ctx['action_obj'] = ObjectTypeEnum.QUERY_EDIT
+        self._cancel_btn.setEnabled(False)
+        self._dbc_signals.status_notify.emit("Cancelling query", "")
+        self.executeAction(ctx)
+        self._dbc_signals.status_notify.emit("Query cancelled", "")
+        
 
     def _on_first_page(self):
         if self._current_page > 0:
@@ -171,6 +188,7 @@ class ContentWindow(QWidget):
         self._last_page_btn.setEnabled(not is_last_page)
 
     def refreshContent(self, response: AbstractDataResponse):
+        self._cancel_btn.setEnabled(False)
         if response:
             self._response = response
         assert self._response
