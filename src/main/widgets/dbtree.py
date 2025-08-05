@@ -1,3 +1,4 @@
+from functools import partial
 from pydoc import TextRepr
 from typing import Optional
 from PyQt6.QtWidgets import QTreeView, QMessageBox, QWidget, QMenu
@@ -13,18 +14,18 @@ from threading import Thread
 from main.widgets.utils import DBCSignals
 
 class DbTreeView(QTreeView):
-    wrong_action = pyqtSignal(QWidget, str, str)
+    wrong_action = pyqtSignal(str, str)
 
     def __init__(self, parent, dbc_signals: DBCSignals) -> None:
         super().__init__(parent)
         self.setAccessibleName("Connections")
-        self.modelManager = ModelManager.createBaseModel()
+        self.modelManager = ModelManager.createBaseModel(self.wrong_action)
         self.setModel(self.modelManager.getModel())
         self.expanded.connect(self.on_item_expanded)
         self.collapsed.connect(self.on_item_collapsed)
         self.show()
 
-        self.wrong_action.connect(QMessageBox.information)
+        self.wrong_action.connect(partial(QMessageBox.information, self))
         self._dbc_signals = dbc_signals
 
 
@@ -51,17 +52,11 @@ class DbTreeView(QTreeView):
             if response:
                 self._dbc_signals.table_loaded.emit(response)
         except Exception as e:
-            self.wrong_action.emit(self, "Error", str(e))
+            self.wrong_action.emit("Error", str(e))
         
 
     def on_item_expanded(self, index: QModelIndex):
-        Thread(target=self.asynch_expand, args=(index,)).start()
-
-    def asynch_expand(self, index: QModelIndex):
-        try:
-            self.modelManager.expandModel(index)
-        except Exception as e:
-            self.wrong_action.emit(self, "Error", str(e))
+        self.modelManager.expandModel(index)
 
     def on_item_collapsed(self, index: QModelIndex):
         try:
@@ -102,4 +97,4 @@ class DbTreeView(QTreeView):
             if response:
                 dialog.ModalDialog(self, response.toPlainText().results, self._dbc_signals)
         except Exception as e:
-            self.wrong_action.emit(self, "Error", str(e))
+            self.wrong_action.emit("Error", str(e))
