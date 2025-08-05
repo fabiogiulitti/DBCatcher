@@ -1,23 +1,29 @@
+from threading import Thread
 from typing import Optional
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
+from PyQt6.QtCore import pyqtBoundSignal, pyqtSignal, QModelIndex, QObject
 from main.core.manager import executeTreeNav
 from main.core.treepath import Node
 from main.core.config.ConfigManager import retrieveConnections
 from main.widgets.utils import createItem
 
-class ModelManager:
+class ModelManager(QObject):
+    node_insertion = pyqtSignal(QStandardItem, Node)
 
-    def __init__(self, model: QStandardItemModel) -> None:
+    def __init__(self, model: QStandardItemModel, wrong_action: pyqtBoundSignal) -> None:
+         super().__init__()
          self._model = model
+         self._wrong_action = wrong_action
+         self.node_insertion.connect(addNodes)
 
     @staticmethod
-    def createBaseModel():
+    def createBaseModel(wrong_action: pyqtBoundSignal):
         model = QStandardItemModel()
         model.setHorizontalHeaderLabels(['Connections'])
         root_item: Optional[QStandardItem] = model.invisibleRootItem()
         assert root_item
         root_item.appendRows(addConnections())
-        manager = ModelManager(model)
+        manager = ModelManager(model, wrong_action)
         return manager
     
     def getModel(self):
@@ -27,9 +33,16 @@ class ModelManager:
     def expandModel(self, index):
         item = self._model.itemFromIndex(index)
         assert item
-        data = index.model().itemData(index)
-        node: Node = executeTreeNav(data[257])
-        addNodes(item,node)
+        Thread(target=self.expandModelAsync, args=(index, item)).start()
+
+    def expandModelAsync(self, index, item):
+        try:
+            data = index.model().itemData(index)
+            node: Node = executeTreeNav(data[257])
+            self.node_insertion.emit(item, node)
+        except Exception as e:
+            self._wrong_action.emit("Error", str(e))
+
 
     def collapseModel(self, index):
         item: Optional[QStandardItem] = self._model.itemFromIndex(index)
