@@ -29,8 +29,7 @@ def mongo_service(docker_services):
 
 
 def test_mongo_tree_navigation(mongo_service):
-    ctx = dict()
-    ctx['connectionURI'] = "mongodb://localhost:27017"
+    ctx = {"connection_uri": "mongodb://localhost:27017"}
 
     tree_action = TreeActions()
     method = tree_action.retrieveDatabases.__wrapped__

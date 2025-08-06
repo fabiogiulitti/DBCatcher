@@ -55,7 +55,8 @@ class TreeActions(AbstractTreeAction):
     @TreePath(node_type_in='connections', node_type_out='databases')
     def retrieveDatabases(self, ctx: dict):
         id = make_session_id()
-        references[id] = {'client' : MongoClient(ctx['connectionURI'])}
+        print(ctx)
+        references[id] = {'client' : MongoClient(ctx['connection_uri'])}
         databases = references[id]['client'].list_database_names()
         return (databases,id)
 
