@@ -25,6 +25,7 @@ jobs:
         python-version: "3.12.10"
     - name: Install dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install libpq-dev libegl1 -y
         python -m pip install --upgrade pip
         pip install flake8 pytest
@@ -38,5 +39,4 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        eval $(poetry env activate)
-        pytest --container-scope module
+        poetry run pytest --container-scope module
