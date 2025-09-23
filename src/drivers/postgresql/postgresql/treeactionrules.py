@@ -77,11 +77,12 @@ class PSTreeActions(AbstractTreeAction):
 
     @TreePath(node_type_in='connections', node_type_out='databases')
     def retrieveDatabases(self, ctx: dict):
-        id = make_session_id()
+#        id = make_session_id()
 
         try:
             
             conn = connect(ctx['connection_uri'])
+            id = make_session_id()
             references[id] = {'connection_uri' : ctx['connection_uri']}
             cursor = conn.cursor()
 
@@ -96,28 +97,36 @@ class PSTreeActions(AbstractTreeAction):
             conn.close()
         except Exception as e:
             print(f"Errore durante la connessione a PostgreSQL: {e}")
+            raise e
 
         return (result,id)
 
 
     @TreePath(node_type_in='databases', node_type_out='schemas')
     def retrieveSchemas(self, ctx: dict):
-        id = ctx['sessionID']
-        connection_uri = references[id]['connection_uri']
-        dsn = extensions.make_dsn(connection_uri, dbname = ctx['path'][0])
-        conn = connect(dsn)
+        id_server = ctx['sessionID']
+        id_db = make_session_id()
+        connection_uri = references[id_server]['connection_uri']
+        try:
+            dsn = extensions.make_dsn(connection_uri, dbname = ctx['path'][0])
+            conn = connect(dsn)
+            
+            cur = conn.cursor()
+            cur.execute("""     
+                SELECT schema_name
+                FROM information_schema.schemata
+            """)
 
-        cur = conn.cursor()
-        cur.execute("""     
-            SELECT schema_name
-            FROM information_schema.schemata
-        """)
+            schemas = cur.fetchall()
+            result = map(lambda n: n[0], schemas)
 
-        schemas = cur.fetchall()
-        result = map(lambda n: n[0], schemas)
+            references[id_db] = {'client' : conn }
 
-        references[id]['client'] = conn
-        return (result, id)
+            return (result, id_db)
+        except Exception as e:
+            cur.close()
+            conn.rollback()
+            raise e
 
 
     @TreePath(node_type_in='schemas', node_type_out='schema_obj_hold')

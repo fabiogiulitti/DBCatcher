@@ -63,6 +63,7 @@ def test_web_service(web_service):
     schemas = list(result[0])[:3]
     assert schemas == ['public', 'comics', 'information_schema']
 
+    ctx['sessionID'] = result[1]
     ctx['path'].append(schemas[1])
 
     method = tree_action.retrieveSchemaHolding.__wrapped__ # type: ignore
