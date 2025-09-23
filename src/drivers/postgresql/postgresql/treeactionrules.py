@@ -1,13 +1,14 @@
 import math
-from platform import node
+
 from main.core.ActonTypeEnum import ActionTypeEnum
 from main.core.driver.abstractdataresponse import AbstractDataResponse, TextResponse
 from main.core.treepath import ItemAction, TreePath,make_session_id, references
 from json import dumps
+from main.core.util.util import AbstractConnectionStrategy, ConnectionProxy
 from main.widgets.ContentData import ContentData, ContentDataModel
 from main.core.driver.abstractdriver import AbstractTreeAction
 from psycopg2 import connect, extensions
-from attr import define, ib, s
+from attr import define
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from textwrap import dedent
 
@@ -78,14 +79,11 @@ class PSTreeActions(AbstractTreeAction):
     @TreePath(node_type_in='connections', node_type_out='databases')
     def retrieveDatabases(self, ctx: dict):
 #        id = make_session_id()
-
         try:
-            
             conn = connect(ctx['connection_uri'])
             id = make_session_id()
             references[id] = {'connection_uri' : ctx['connection_uri']}
             cursor = conn.cursor()
-
             cursor.execute("SELECT datname FROM pg_database WHERE datistemplate = false;")
 
             databases = cursor.fetchall()
@@ -108,8 +106,7 @@ class PSTreeActions(AbstractTreeAction):
         id_db = make_session_id()
         connection_uri = references[id_server]['connection_uri']
         try:
-            dsn = extensions.make_dsn(connection_uri, dbname = ctx['path'][0])
-            conn = connect(dsn)
+            conn = ConnectionProxy(ConnectionStrategy, connection_uri, ctx['path'][0])
             
             cur = conn.cursor()
             cur.execute("""     
@@ -119,11 +116,14 @@ class PSTreeActions(AbstractTreeAction):
 
             schemas = cur.fetchall()
             result = map(lambda n: n[0], schemas)
-
+            print(result)
             references[id_db] = {'client' : conn }
+
+            cur.close()
 
             return (result, id_db)
         except Exception as e:
+            print(f"Eccezione {e}")
             cur.close()
             conn.rollback()
             raise e
@@ -421,3 +421,17 @@ def getTableCount(dimPage, schemaName, tabName, conn):
     last_page = math.ceil(num_rows / dimPage - 1)
     cur.close()
     return num_rows,last_page
+
+
+class ConnectionStrategy(AbstractConnectionStrategy[extensions.connection]):
+    timeout = 5 #minutes
+    close = extensions.connection.close
+    isCconnected = lambda c: c.closed == 0
+
+    @staticmethod
+    def connect(params: dict[str, str]):
+        connection_uri = params['connection_uri']
+        db_name = params['db_name']
+        dsn = extensions.make_dsn(connection_uri, dbname = db_name)
+        return connect(dsn)
+

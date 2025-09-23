@@ -176,3 +176,4 @@ def test_web_service(web_service):
     assert text_response.toPlainText().results.splitlines()[:2] == ['CREATE OR REPLACE PROCEDURE comics.copy_characters()', ' LANGUAGE plpgsql']
 
     del ctx['path'][-2:]
+

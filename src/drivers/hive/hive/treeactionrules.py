@@ -1,9 +1,10 @@
+import logging
 import math
-from re import I
 from main.core.ActonTypeEnum import ActionTypeEnum
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.treepath import ItemAction, TreePath,make_session_id, references
 from json import dumps
+from main.core.util.util import AbstractConnectionStrategy, ConnectionProxy
 from main.widgets.ContentData import ContentData, ContentDataModel
 from main.core.driver.abstractdriver import AbstractTreeAction
 from attr import ib, s
@@ -71,9 +72,9 @@ class PSTreeActions(AbstractTreeAction):
     @TreePath(node_type_in='connections', node_type_out='catalogs')
     def retrieveCatalogs(self, ctx: dict):
         id = make_session_id()
-        print("ctx: {ctx}")
         try:
-            conn = hive.Connection(host=ctx['host'], port=ctx['port'])
+#            conn = hive.Connection(host=ctx['host'], port=ctx['port'])
+            conn = ConnectionProxy(ConnectionStrategy, host=ctx['host'], port=ctx['port'])
             references[id] = {
                 'client': conn,
                 'host' : ctx['host'],
@@ -89,8 +90,10 @@ class PSTreeActions(AbstractTreeAction):
                 result.append(cat)
 
             cursor.close()
+            print("fine metodo")
         except Exception as e:
-            print(f"Errore durante la connessione a Hive-Kyuubi: {ctx} {e}")
+            logging.info(f"Errore connetting to Hive-Kyuubi: {ctx} {e}")
+            raise e
 
         return (result, id)
 
@@ -223,3 +226,30 @@ def getTableCount(dim_page, database_name, tab_name, conn):
     last_page = math.ceil(num_rows / dim_page - 1)
     cur.close()
     return num_rows, last_page
+
+
+class ConnectionStrategy(AbstractConnectionStrategy[hive.Connection]):
+    timeout = 2 #minutes
+    close = hive.Connection.close
+
+    @staticmethod
+    def connect(params: dict[str, str]):
+        host = params['host']
+
+        port = params['port']
+        logging.debug(f"Connecting to Hive... {params}")
+        connection = hive.Connection(host=host, port=port)
+        logging.debug(f"Connected to Hive... {params} {connection.sessionHandle.sessionId}")
+        return connection
+
+
+    @staticmethod
+    def isConnected(conn):
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchall()
+            return True
+        except Exception:
+            logging.debug("Hive connection is close")
+            return False
