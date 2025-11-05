@@ -119,11 +119,11 @@ class ContentWindow(QWidget):
             ctx = self._response.metadata()
             ctx['action_type'] = ActionTypeEnum.FIRST_PAGE
             assert self._driver_type
-            if self._driver_type.selected_view == ViewTypeEnum.JSON:
+            if self._driver_type._selected_view == ViewTypeEnum.JSON:
                 ctx['action_obj'] = ObjectTypeEnum.TEXT_AREA
-            elif self._driver_type.selected_view == ViewTypeEnum.TABULAR:
+            elif self._driver_type._selected_view == ViewTypeEnum.TABULAR:
                 ctx['action_obj'] = ObjectTypeEnum.TABULAR
-            elif self._driver_type.selected_view == ViewTypeEnum.TREE:
+            elif self._driver_type._selected_view == ViewTypeEnum.TREE:
                 ctx['action_obj'] = ObjectTypeEnum.TREE
 
             self.executeAction(ctx)
@@ -135,11 +135,11 @@ class ContentWindow(QWidget):
             ctx = self._response.metadata()
             ctx['action_type'] = ActionTypeEnum.PREVIOUS_PAGE
             assert self._driver_type
-            if self._driver_type.selected_view == ViewTypeEnum.JSON:
+            if self._driver_type._selected_view == ViewTypeEnum.JSON:
                 ctx['action_obj'] = ObjectTypeEnum.TEXT_AREA
-            elif self._driver_type.selected_view == ViewTypeEnum.TABULAR:
+            elif self._driver_type._selected_view == ViewTypeEnum.TABULAR:
                 ctx['action_obj'] = ObjectTypeEnum.TABULAR
-            elif self._driver_type.selected_view == ViewTypeEnum.TREE:
+            elif self._driver_type._selected_view == ViewTypeEnum.TREE:
                 ctx['action_obj'] = ObjectTypeEnum.TREE
 
             self.executeAction(ctx)
@@ -151,11 +151,11 @@ class ContentWindow(QWidget):
             ctx = self._response.metadata()
             ctx['action_type'] = ActionTypeEnum.NEXT_PAGE
             assert self._driver_type
-            if self._driver_type.selected_view == ViewTypeEnum.JSON:
+            if self._driver_type._selected_view == ViewTypeEnum.JSON:
                 ctx['action_obj'] = ObjectTypeEnum.TEXT_AREA
-            elif self._driver_type.selected_view == ViewTypeEnum.TABULAR:
+            elif self._driver_type._selected_view == ViewTypeEnum.TABULAR:
                 ctx['action_obj'] = ObjectTypeEnum.TABULAR
-            elif self._driver_type.selected_view == ViewTypeEnum.TREE:
+            elif self._driver_type._selected_view == ViewTypeEnum.TREE:
                 ctx['action_obj'] = ObjectTypeEnum.TREE
 
             self.executeAction(ctx)
@@ -167,11 +167,11 @@ class ContentWindow(QWidget):
             ctx = self._response.metadata()
             ctx['action_type'] = ActionTypeEnum.LAST_PAGE
             assert self._driver_type
-            if self._driver_type.selected_view == ViewTypeEnum.JSON:
+            if self._driver_type._selected_view == ViewTypeEnum.JSON:
                 ctx['action_obj'] = ObjectTypeEnum.TEXT_AREA
-            elif self._driver_type.selected_view == ViewTypeEnum.TABULAR:
+            elif self._driver_type._selected_view == ViewTypeEnum.TABULAR:
                 ctx['action_obj'] = ObjectTypeEnum.TABULAR
-            elif self._driver_type.selected_view == ViewTypeEnum.TREE:
+            elif self._driver_type._selected_view == ViewTypeEnum.TREE:
                 ctx['action_obj'] = ObjectTypeEnum.TREE
 
             self.executeAction(ctx)
@@ -187,7 +187,7 @@ class ContentWindow(QWidget):
         self._next_page_btn.setEnabled(not is_last_page)
         self._last_page_btn.setEnabled(not is_last_page)
 
-    def refreshContent(self, response: AbstractDataResponse):
+    def refreshContent(self, response: AbstractDataResponse | None):
         self._cancel_btn.setEnabled(False)
         if response:
             self._response = response
@@ -196,19 +196,19 @@ class ContentWindow(QWidget):
         self._driver_type = metadata['type']
         assert self._driver_type
         try:
-            if self._driver_type.selected_view == ViewTypeEnum.JSON:
+            if self._driver_type._selected_view == ViewTypeEnum.JSON:
                 data = self._response.toJson()
                 self.content_txt.refreshData(data)
                 self.content_tab.setVisible(False)
                 self.content_tree.setVisible(False)
                 self.content_txt.setVisible(True)
-            elif self._driver_type.selected_view == ViewTypeEnum.TABULAR:
+            elif self._driver_type._selected_view == ViewTypeEnum.TABULAR:
                 data = self._response.toTabular()
                 self.content_tab.refreshData(data)
                 self.content_txt.setVisible(False)
                 self.content_tab.setVisible(True)
                 self.content_tree.setVisible(False)
-            elif self._driver_type.selected_view == ViewTypeEnum.TREE:
+            elif self._driver_type._selected_view == ViewTypeEnum.TREE:
                 data = self._response.toTree()
                 self.content_tree.refreshData(data)
                 self.content_txt.setVisible(False)

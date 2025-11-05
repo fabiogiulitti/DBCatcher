@@ -1,26 +1,28 @@
+import logging
+from typing import Any
 import yaml
 
 class ConfigManager:
     def __init__(self, config_file):
-        if config_file is not None:
+        if config_file:
             self.config_file = config_file
         else:
             self.config_file = "src/config/config.yaml"
         self.config = self.load_config()
 
-    def load_config(self):
+    def load_config(self) -> dict:
         try:
             with open(self.config_file, 'r') as file:
                 config = yaml.safe_load(file)
                 return config
         except FileNotFoundError:
-            print(f"File '{self.config_file}' non trovato.")
+            logging.warn(f"File '{self.config_file}' not found")
             return {}
         except yaml.YAMLError as e:
-            print(f"Errore nel caricamento del file YAML: {e}")
-            return {}
+            logging.error(f"Errore loading YAML file: {e}")
+            raise e
 
-    def get_value(self, key):
+    def get_value(self, key) -> Any:
         return self.config.get(key)
 
     def set_value(self, key, value):

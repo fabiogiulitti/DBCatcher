@@ -1,6 +1,8 @@
+import logging
 import math
 
 from main.core.ActonTypeEnum import ActionTypeEnum
+from main.core.config import crypto_manager
 from main.core.driver.abstractdataresponse import AbstractDataResponse, TextResponse
 from main.core.treepath import ItemAction, TreePath,make_session_id, references
 from json import dumps
@@ -80,7 +82,7 @@ class PSTreeActions(AbstractTreeAction):
     def retrieveDatabases(self, ctx: dict):
 #        id = make_session_id()
         try:
-            conn = connect(ctx['connection_uri'])
+            conn = connect(crypto_manager.decrypt(ctx['connection_uri']))
             id = make_session_id()
             references[id] = {'connection_uri' : ctx['connection_uri']}
             cursor = conn.cursor()
@@ -94,7 +96,7 @@ class PSTreeActions(AbstractTreeAction):
             cursor.close()
             conn.close()
         except Exception as e:
-            print(f"Errore durante la connessione a PostgreSQL: {e}")
+            logging.error("Error during PostgreSQL connection: {e}")
             raise e
 
         return (result,id)
@@ -106,7 +108,7 @@ class PSTreeActions(AbstractTreeAction):
         id_db = make_session_id()
         connection_uri = references[id_server]['connection_uri']
         try:
-            conn = ConnectionProxy(ConnectionStrategy, connection_uri, ctx['path'][0])
+            conn = ConnectionProxy(ConnectionStrategy, crypto_manager.decrypt(connection_uri), ctx['path'][0])
             
             cur = conn.cursor()
             cur.execute("""     

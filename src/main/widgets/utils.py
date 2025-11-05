@@ -26,6 +26,7 @@ def addLoadingItem(item):
 
 @define
 class DBCSignals(QObject):
+    connection_added = pyqtSignal(dict)
     status_notify  = pyqtSignal(str, str)
     table_loaded = pyqtSignal(AbstractDataResponse)
     show_detail = pyqtSignal(str, str)

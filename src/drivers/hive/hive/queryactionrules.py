@@ -34,16 +34,12 @@ class PSQueryActionDef(AbstractDriver):
                 status = cur.poll()
                 if references[id]['query_status'] == ttypes.TOperationState.CANCELED_STATE:
                     cur.cancel()
-                    print("cancelled")
                     return None
                 elif status.operationState == ttypes.TOperationState.RUNNING_STATE:
-                    print("slip")
                     time.sleep(5)
                 elif status.operationState == ttypes.TOperationState.FINISHED_STATE:
-                    print("finished")
                     break
                 else: #if status.operationState in (ttypes.TOperationState.ERROR_STATE, ttypes.TOperationState.CANCELED_STATE):
-                    print(status.operationState)
                     return None
 
             rows = cur.fetchall()
@@ -71,6 +67,5 @@ class PSQueryActionDef(AbstractDriver):
             with _lock:
                 references[id]['query_status'] = ttypes.TOperationState.CANCELED_STATE
         metadata = {"query_status": query_status}
-        print(references[id]['query_status'])
 #            return DataResponse([], [], "", metadata)
         return None

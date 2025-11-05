@@ -1,5 +1,8 @@
 from cProfile import label
 from enum import Enum
+from json import JSONEncoder
+
+from attr import define
 
 from main.widgets.model import viewtypeenum
 from main.widgets.model.viewtypeenum import ViewTypeEnum
@@ -28,26 +31,43 @@ class ObjectTypeEnum(Enum):
 
 
 class DriverTypeEnum(Enum):
-    MONGODB = ('MongoDB', ViewTypeEnum.TREE, ViewTypeEnum.JSON.value | ViewTypeEnum.TREE.value)
-    POSTGRESQL = ('PostgreSQL', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value)
-    ORACLE = ('Oracle', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value)
-    MYSQL = ('MySql', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value)
-    HIVE = ('Hive/Kyuubi', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR)
+    MONGODB = ('MongoDB', ViewTypeEnum.TREE, ViewTypeEnum.JSON.value | ViewTypeEnum.TREE.value, True)
+    POSTGRESQL = ('PostgreSQL', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value, True)
+    ORACLE = ('Oracle', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value, True)
+    MYSQL = ('MySql', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR.value, True)
+    HIVE = ('Hive/Kyuubi', ViewTypeEnum.TABULAR, ViewTypeEnum.TABULAR, False)
 
-    def __init__(self, label, default_view, available_views) -> None:
-        self.label = label
-        self.selected_view: ViewTypeEnum = default_view
-        self.available_views = available_views
+    def __init__(self, label, default_view, available_views, connection_uri_enabled: bool) -> None:
+        self._label = label
+        self._selected_view: ViewTypeEnum = default_view
+        self._available_views = available_views
+        self._connection_uri_enabled = connection_uri_enabled
 
 
     @classmethod
     def fromLabel(cls, label):
         for item in cls:
-            if item.label == label:
+            if item._label == label:
                 return item
         raise ValueError(f"{label=} not found in {cls.__name__}")
 
 
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def selectedView(self):
+        return self._selected_view
+
+    @selectedView.setter
     def setSelectedView(self, view: ViewTypeEnum):
-        self.selected_view = view
-        
+        self._selected_view = view
+
+    @property
+    def availableViews(self):
+        return self._available_views
+
+    @property
+    def connectionURIEnabled(self):
+        return self._connection_uri_enabled

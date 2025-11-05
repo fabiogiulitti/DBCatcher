@@ -1,6 +1,7 @@
 import math
 from attr import ib, s
 from attrs import define
+from main.core.config import crypto_manager
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.treepath import TreePath,make_session_id, references
 from main.core.treepath import ItemAction
@@ -55,8 +56,8 @@ class TreeActions(AbstractTreeAction):
     @TreePath(node_type_in='connections', node_type_out='databases')
     def retrieveDatabases(self, ctx: dict):
         id = make_session_id()
-        print(ctx)
-        references[id] = {'client' : MongoClient(ctx['connection_uri'])}
+        connection_uri = crypto_manager.decrypt(ctx['connection_uri'])
+        references[id] = {'client' : MongoClient(connection_uri)}
         databases = references[id]['client'].list_database_names()
         return (databases,id)
 

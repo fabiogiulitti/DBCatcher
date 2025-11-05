@@ -1,9 +1,9 @@
-from attr import dataclass
+from attr import dataclass, define
 
 from main.core.ActonTypeEnum import DriverTypeEnum
 
 
-#@dataclass
+@define
 class Connection:
     name: str
     type: DriverTypeEnum
@@ -23,5 +23,5 @@ class Connection:
         self.user = values.get("user", '')
         self.password = values.get("password", '')
 
-        if (self.connection_uri is None and (self.host is None or self.port is None)):
-            print("Invalid configuration {self}")
+        if (not self.connection_uri and (not self.host or not self.port)):
+            raise ValueError(f"Invalid connection configuration {self}")

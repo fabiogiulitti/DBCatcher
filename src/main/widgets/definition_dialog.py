@@ -17,7 +17,7 @@ class ModalDialog(QDialog):
         layout = QVBoxLayout()
         self._text_edit = QTextEdit()
         self._text_edit.setPlainText(ddl_text)
-        self._text_edit.setReadOnly(True)
+#        self._text_edit.setReadOnly(True)
         self._text_edit.setFont(QtGui.QFont("Courier New", 10))
         layout.addWidget(self._text_edit)
 
