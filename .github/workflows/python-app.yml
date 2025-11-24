@@ -15,8 +15,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      PYTHON_KEYRING_BACKEND: keyrings.alt.file.PlaintextKeyring
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python 3.12
@@ -29,9 +27,9 @@ jobs:
         sudo apt-get install libpq-dev libegl1 -y
         python -m pip install --upgrade pip
         pip install flake8 pytest
-        pip install keyrings.alt
         pip install poetry
         poetry install
+        poetry add keyrings.alt
 #        poetry config keyring.enabled false
     - name: Lint with flake8
       run: |
@@ -41,9 +39,10 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
     - name: Prepare keyring just for testing
+      env:
+        PYTHON_KEYRING_BACKEND: keyrings.alt.file.PlaintextKeyring
       run: |
-        poetry add keyrings.alt
-        python - <<EOF
+        poetry run python - <<EOF
         import keyring
         from cryptography.fernet import Fernet
 
