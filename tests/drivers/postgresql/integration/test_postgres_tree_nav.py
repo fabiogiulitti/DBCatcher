@@ -81,10 +81,10 @@ def test_web_service(web_service):
     result = method(tree_action, ctx)
 
     tables = list(result[0])
-    assert tables == ['users', 'characters']
+    assert tables == ['characters', 'users']
     assert result[1] == ctx['sessionID']
 
-    ctx['path'].append(tables[0])
+    ctx['path'].append(tables[1])
 
     method = tree_action.retrieveFirstRowsTable.__wrapped__ # type: ignore
     response: DataResponse = method(tree_action, ctx)
