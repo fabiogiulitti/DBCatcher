@@ -75,7 +75,6 @@ class PSTreeActions(AbstractTreeAction):
                 self._navActions[nodeTypeIn] = subItem
             else:
                 self._navActions[nodeTypeIn] = {'default' : method}
-
         
 
     @TreePath(node_type_in='connections', node_type_out='databases')
@@ -138,8 +137,29 @@ class PSTreeActions(AbstractTreeAction):
 
     @TreePath(node_type_in='schema_obj_hold', node_type_out='tables', holder_type='tables')
     def retrieveTables(self, ctx: dict):
-        objType = getattr(self.retrieveTables, 'holder_type')
-        return self._retrieveDbObjects(ctx, 'BASE TABLE')
+        id = ctx['sessionID']
+        schema = ctx['path'][-2]
+        
+        conn = references[id]['client']
+        cur = conn.cursor()
+        query = f"""
+            SELECT
+                c.relname AS table_name
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'p')
+                AND c.relispartition = false
+                and n.nspname = '{schema}'
+            ORDER BY table_name;
+        """
+        cur.execute(query)
+        tables = cur.fetchall()
+        result = map(lambda n: n[0], tables)
+
+        cur.close()
+
+        return (result, id)
+
 
     @TreePath(node_type_in='schema_obj_hold', node_type_out='views', holder_type='views')
     def retrieveViews(self, ctx: dict):
@@ -217,7 +237,7 @@ class PSTreeActions(AbstractTreeAction):
 
     @TreePath(node_type_in='tables', node_type_out='tables_obj_hold')
     def retrieveTabHolding(self, ctx: dict):
-        return (['columns','indexes'],ctx['sessionID'])
+        return (['columns', 'indexes', 'partitions'],ctx['sessionID'])
 
 
     @TreePath(node_type_in='tables_obj_hold', node_type_out='columns', holder_type='columns')
@@ -267,6 +287,41 @@ class PSTreeActions(AbstractTreeAction):
         return (result, id)
 
 
+    @TreePath(node_type_in='tables_obj_hold', node_type_out='partitions', holder_type='partitions')
+    def retrieveFirstPartitions(self, ctx: dict):
+        return self._retrievePartitions(ctx)
+    
+    @TreePath(node_type_in='partitions', node_type_out='partitions_obj_hold')
+    def retrievePartitionsObjHolding(self, ctx: dict):
+        return (['partitions'], ctx['sessionID'])
+
+    @TreePath(node_type_in='partitions_obj_hold', node_type_out='partitions')
+    def retrievePartitionsInherited(self, ctx: dict):
+        return self._retrievePartitions(ctx)
+    
+    def _retrievePartitions(self, ctx: dict):
+        id = ctx['sessionID']
+        parent_table = ctx['path'][-2]
+        
+        conn = references[id]['client']
+        cur = conn.cursor()
+        query = f"""
+            SELECT
+                child.relname  AS partition_name
+            FROM pg_inherits
+            JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
+            JOIN pg_class child  ON pg_inherits.inhrelid = child.oid
+            WHERE parent.relname = '{parent_table}'
+            order by child.relname
+        """
+        cur.execute(query)
+        tables = cur.fetchall()
+        result = [n[0] for n in tables]
+
+        cur.close()
+
+        return (result, id)
+
     @ItemAction(node_type_in='tables', action_type = ActionTypeEnum.CLICK)
     def retrieveFirstRowsTable(self, ctx: dict):
         return getRows(ctx)
@@ -278,7 +333,13 @@ class PSTreeActions(AbstractTreeAction):
     @ItemAction(node_type_in='materialized views', action_type = ActionTypeEnum.CLICK)
     def retrieveFirstRowsMatView(self, ctx: dict):
         return getRows(ctx)
-    
+
+
+    @ItemAction(node_type_in='partitions', action_type = ActionTypeEnum.CLICK)
+    def retrieveFirstRowsPartition(self, ctx: dict):
+        return getRows(ctx)
+
+
     @ItemAction(node_type_in='tables', action_type = ActionTypeEnum.DDL)
     def retrieveTableDDL(self, ctx: dict):
         id = ctx['sessionID']
@@ -380,7 +441,7 @@ def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
     id = ctx['sessionID']
     schema_name = ctx['path'][1]
     tab_name = ctx['path'][-1]
-
+    print(f"{schema_name} {tab_name}")
     conn = references[id]['client']
     try:
         skip = cur_page * dim_page
@@ -399,7 +460,9 @@ def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
         
         assert cur.description
         cols = [desc[0] for desc in cur.description]
+
         rows = cur.fetchall()
+
         cur.close()
         
         metadata = ctx.copy()

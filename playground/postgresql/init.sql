@@ -30,15 +30,38 @@ INSERT INTO comics.users (name, email, address) VALUES ('Bob Brown', 'bob.brown@
 
 --
 CREATE TABLE comics.characters (
-    id SERIAL PRIMARY KEY,
+    id SERIAL,
     name VARCHAR(100) NOT NULL,
     universe VARCHAR(100),
     first_appearance DATE,
     creator VARCHAR(100),
     gender VARCHAR(10),
     species VARCHAR(50),
-    alignment VARCHAR(20)
-);
+    alignment VARCHAR(20),
+	   primary key (id, universe, gender)
+) PARTITION BY LIST (universe);
+
+CREATE TABLE comics.characters_dc
+PARTITION OF comics.characters
+FOR VALUES IN ('DC')
+PARTITION BY LIST (gender);
+
+CREATE TABLE comics.characters_dc_male
+PARTITION OF comics.characters_dc
+FOR VALUES IN ('Male');
+
+CREATE TABLE comics.characters_dc_female
+PARTITION OF comics.characters_dc
+FOR VALUES IN ('Female');
+
+CREATE TABLE comics.characters_dc_other
+PARTITION OF comics.characters_dc
+FOR VALUES IN ('Other');
+
+CREATE TABLE comics.characters_default
+PARTITION OF comics.characters
+DEFAULT;
+
 
 --
 INSERT INTO comics.characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Michael Hicks', 'Image', '1997-10-22', 'Savannah Goodwin', 'Female', 'Animal', 'Neutral');

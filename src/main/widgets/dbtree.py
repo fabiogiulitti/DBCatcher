@@ -103,7 +103,6 @@ class DbTreeView(QTreeView):
                 assert model is not None
                 data = model.itemData(index)
                 ctx = data[257].copy()
-                print(ctx)
                 name = ctx['name']
                 ConnectionDialog(self, self._dbc_signals, name)
             else:

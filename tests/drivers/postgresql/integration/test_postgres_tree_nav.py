@@ -84,16 +84,16 @@ def test_web_service(web_service):
     assert tables == ['characters', 'users']
     assert result[1] == ctx['sessionID']
 
-    ctx['path'].append(tables[1])
+    ctx['path'].append(tables[0])
 
     method = tree_action.retrieveFirstRowsTable.__wrapped__ # type: ignore
     response: DataResponse = method(tree_action, ctx)
-    rows = list(islice(response.rows, 2))
-    assert rows == [(1, 'John Doe', 'john.doe@example.com', {'city': 'Anytown', 'street': '123 Main St', 'zip_code': '12345'}), (2, 'Jane Smith', 'jane.smith@example.com', {'city': 'Someplace', 'street': '456 Oak Ave', 'zip_code': '67890'})]
+    rows = response.rows[:2]
+    assert rows == [(7, 'Brett Diaz', 'DC', datetime.date(1953, 10, 17), 'Debra Jones', 'Female', 'Alien', 'Good'), (11, 'Daniel Murphy', 'DC', datetime.date(1951, 12, 22), 'Andrew Johnson', 'Female', 'Robot','Good')]
     
     method = tree_action.retrieveTabHolding.__wrapped__ # type: ignore
     table_objects = method(tree_action, ctx)
-    assert table_objects[0] == ['columns', 'indexes']
+    assert table_objects[0] == ['columns', 'indexes', 'partitions']
 
     ctx['path'].append(table_objects[0][0])
     method = tree_action.retrieveColumns.__wrapped__ # type: ignore
@@ -106,14 +106,27 @@ def test_web_service(web_service):
     method = tree_action.retrieveIndexes.__wrapped__ # type: ignore
     result = method(tree_action, ctx)
     indexes = list(result[0])
-    assert indexes == ['users_pkey']
+    assert indexes == ['characters_pkey']
 
-    del ctx['path'][-1:]
+    # Testing list of partitions. Overwrite the last item of the tree path to substitute indexes, used in the previous call
+    ctx['path'][-1] = table_objects[0][2]
+    method = tree_action.retrieveFirstPartitions.__wrapped__ # type: ignore
+    result = method(tree_action, ctx)
+    partitions = list(result[0])
+    assert partitions == ['characters_dc','characters_default']
 
+    ctx['path'].append(partitions[0])
+    method = tree_action.retrieveFirstRowsPartition.__wrapped__ # type: ignore
+    response: DataResponse = method(tree_action, ctx)
+    rows = response.rows[:2]
+    assert rows[:2] == [(7, 'Brett Diaz', 'DC', datetime.date(1953, 10, 17), 'Debra Jones', 'Female', 'Alien', 'Good'), (11, 'Daniel Murphy', 'DC', datetime.date(1951, 12, 22), 'Andrew Johnson', 'Female', 'Robot', 'Good')]
+
+    # Retrieve table ddl
+    del ctx['path'][-2:]
     method = tree_action.retrieveTableDDL.__wrapped__ # type: ignore
     text_response: TextResponse = method(tree_action, ctx)
 
-    assert text_response.toPlainText().results.splitlines()[:2] == ['CREATE TABLE comics."users" (', '    "id" integer NOT NULL DEFAULT nextval(\'comics.users_id_seq\'::regclass),']
+    assert text_response.toPlainText().results.splitlines()[:2] == ['CREATE TABLE comics."characters" (', '    "id" integer NOT NULL DEFAULT nextval(\'comics.characters_id_seq\'::regclass),']
 
     del ctx['path'][-2:]
         
@@ -128,8 +141,8 @@ def test_web_service(web_service):
     ctx['path'].append(views[0])
     method = tree_action.retrieveFirstRowsView.__wrapped__ # type: ignore
     response: DataResponse = method(tree_action, ctx)
-    rows = list(map(lambda r: r[:8], islice(response.rows, 2)))
-    assert rows == [(1, 'Michael Hicks', 'Image', datetime.date(1997, 10, 22), 'Savannah Goodwin', 'Female', 'Animal', 'Neutral'), (2, 'Scott Meyer', 'Image', datetime.date(1987, 11, 15), 'Tracy Wilkinson', 'Other', 'Human', 'Good')]
+    rows = [r[:8] for r in response.rows[:2]]
+    assert rows == [(7, 'Brett Diaz', 'DC', datetime.date(1953, 10, 17), 'Debra Jones', 'Female', 'Alien', 'Good'), (11, 'Daniel Murphy', 'DC', datetime.date(1951, 12, 22), 'Andrew Johnson', 'Female', 'Robot','Good')]
 
     method = tree_action.retrieveViewDDL.__wrapped__ # type: ignore
     text_response: TextResponse = method(tree_action, ctx)
@@ -146,11 +159,10 @@ def test_web_service(web_service):
     assert mat_views == ['character_details_json']
 
     ctx['path'].append(mat_views[0])
-    print(ctx['path'])
     method = tree_action.retrieveFirstRowsMatView.__wrapped__ # type: ignore
     response: DataResponse = method(tree_action, ctx)
-    rows = list(islice(response.rows, 2))
-    assert rows == [(1, {'f1': 'Michael Hicks', 'f2': 'Image', 'f3': '1997-10-22', 'f4': 'Savannah Goodwin', 'f5': 'Female', 'f6': 'Animal', 'f7': 'Neutral'}), (2, {'f1': 'Scott Meyer', 'f2': 'Image', 'f3': '1987-11-15', 'f4': 'Tracy Wilkinson', 'f5': 'Other', 'f6': 'Human', 'f7': 'Good'})]
+    rows = response.rows[:2]
+    assert rows == [(7, {'f1': 'Brett Diaz', 'f2': 'DC', 'f3': '1953-10-17', 'f4': 'Debra Jones', 'f5': 'Female', 'f6': 'Alien', 'f7': 'Good'}), (11, {'f1': 'Daniel Murphy', 'f2': 'DC', 'f3': '1951-12-22', 'f4': 'Andrew Johnson', 'f5': 'Female', 'f6': 'Robot', 'f7': 'Good'})]
 
     method = tree_action.retrieveMaterializedViewDDL.__wrapped__ # type: ignore
     text_response: TextResponse = method(tree_action, ctx)

@@ -34,4 +34,4 @@ class ConfigManager:
             with open(self.config_file, 'w') as file:
                 yaml.dump(self.config, file, default_flow_style=False)
         except yaml.YAMLError as e:
-            print(f"Errore nel salvataggio del file YAML: {e}")
+            logging.info("Errore nel salvataggio del file YAML: %s", e)

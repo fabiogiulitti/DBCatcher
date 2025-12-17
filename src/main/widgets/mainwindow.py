@@ -12,7 +12,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle('D B Catcher')
 
-        self.setGeometry(300, 200, 800, 600)
+        self.setGeometry(300, 200, 1200, 800)
         
 
         dbc_signals = DBCSignals()
@@ -22,8 +22,8 @@ class MainWindow(QMainWindow):
         main_split = QSplitter(Qt.Orientation.Horizontal)
         main_split.addWidget(db_tree)
         main_split.addWidget(content_win)
-        main_split.setStretchFactor(0, 1)
-        main_split.setStretchFactor(1, 3)
+        main_split.setStretchFactor(0, 2)
+        main_split.setStretchFactor(1, 7)
         self.setCentralWidget(main_split)
 
         self.setMenuBar(menu_bar.DBCMenuBar(content_win))

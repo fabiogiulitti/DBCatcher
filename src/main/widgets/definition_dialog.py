@@ -32,7 +32,6 @@ class ModalDialog(QDialog):
         button_layout.addWidget(button_close)
         layout.addLayout(button_layout)
         self.setLayout(layout)
-        print("dialog creata")
         self.show()
         self.open()
 #        self.setVisible(False)

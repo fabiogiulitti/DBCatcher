@@ -75,7 +75,6 @@ class ModelManager(QObject):
         assert root_item
         if 0 < len(connection_items):
             root_item.appendRows(connection_items)
-            print("step 4")
 
     def addConnection(self, connection: dict):
         connection_item = QStandardItem(f"{connection['name']} -> {connection['type']}")

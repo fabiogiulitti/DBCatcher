@@ -96,7 +96,6 @@ class ConnectionDialog(QDialog):
                 
             if conn.connection_uri:
                 connection_uri = crypto_manager.decrypt(conn.connection_uri)
-                print(connection_uri)
                 self.connection_uri_input.setText(connection_uri)
             self.host_input.setText(conn.host or "")
             self.port_input.setText(str(conn.port) if conn.port else "")
