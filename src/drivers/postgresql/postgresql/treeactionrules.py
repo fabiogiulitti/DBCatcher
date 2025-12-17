@@ -204,6 +204,7 @@ class PSTreeActions(AbstractTreeAction):
             FROM information_schema.tables
             WHERE table_schema = '{schema}'
             AND table_type = '{objType}'
+            order by table_name
         """
         cur.execute(query)
         tables = cur.fetchall()
