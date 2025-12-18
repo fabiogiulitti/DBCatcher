@@ -1,14 +1,15 @@
 from functools import partial
+import threading
 from typing import Optional
 from PyQt6.QtWidgets import QTreeView, QMessageBox, QMenu
-from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal
+from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal, QItemSelection, QPersistentModelIndex
 from main.core.driver.abstractdataresponse import AbstractDataResponse, TextResponse
 from main.core.manager import executeDialogAction, executeTreeAction
 from main.widgets import definition_dialog
 from main.widgets.dialog.connection_dialog import ConnectionDialog
 from main.widgets.modelmanager import ModelManager
 from main.core.ActonTypeEnum import ActionTypeEnum
-from PyQt6.QtGui import QKeyEvent, QAction, QContextMenuEvent
+from PyQt6.QtGui import QAction, QContextMenuEvent
 from threading import Thread
 
 from main.widgets.utils import DBCSignals
@@ -21,9 +22,16 @@ class DbTreeView(QTreeView):
         self.setAccessibleName("Connections")
         self.modelManager = ModelManager.createBaseModel(self.wrong_action)
         self.setModel(self.modelManager.model)
+        self.setAutoScroll(False)
+        self.setUniformRowHeights(True)
         self.expanded.connect(self.on_item_expanded)
         self.collapsed.connect(self.on_item_collapsed)
         self.show()
+
+        self.activated.connect(self.on_item_activated)
+        selection_model = self.selectionModel()
+        assert selection_model
+        selection_model.selectionChanged.connect(self.on_selection_changed)
 
         self.wrong_action.connect(partial(QMessageBox.information, self))
         self._dbc_signals = dbc_signals
@@ -35,19 +43,19 @@ class DbTreeView(QTreeView):
             event = None
         super().mousePressEvent(event)
     
-    def keyPressEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
-            index = self.currentIndex()
-            model = index.model()
-            assert model is not None
-            data = model.itemData(index)
-            ctx = data[257].copy()
-            ctx['action_type'] = ActionTypeEnum.CLICK
-            Thread(target=self.asynchRefresh, args=(ctx,)).start()
-
-        super().keyPressEvent(event)
+    #def keyPressEvent(self, event: QKeyEvent):
+    def on_item_activated(self, index: QModelIndex):
+#        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+        #index = self.currentIndex()
+        model = self.modelManager._model
+        data = model.userData(index)
+        ctx = data.copy()
+        ctx['action_type'] = ActionTypeEnum.CLICK
+        Thread(target=self.asynchRefresh, args=(ctx,)).start()
+        #super().keyPressEvent(event)
 
     def asynchRefresh(self, ctx):
+        #print(threading.currentThread().name)
         try:
             response: Optional[AbstractDataResponse] = executeTreeAction(ctx)
             if response:
@@ -72,8 +80,7 @@ class DbTreeView(QTreeView):
         if index.internalId() != 0:
             model = index.model()
             assert model
-            data = model.itemData(index)
-            ctx = data[257]
+            ctx = model.itemData(index)
             
             if ctx['levelTag'] == 'connections':
                 new_conn_act_def = QAction("New connection...", self)
@@ -102,8 +109,7 @@ class DbTreeView(QTreeView):
                 model = index.model()
                 assert model is not None
                 data = model.itemData(index)
-                ctx = data[257].copy()
-                print(ctx)
+                ctx = data.copy()
                 name = ctx['name']
                 ConnectionDialog(self, self._dbc_signals, name)
             else:
@@ -117,10 +123,19 @@ class DbTreeView(QTreeView):
             model = index.model()
             assert model is not None
             data = model.itemData(index)
-            ctx = data[257].copy()
+            ctx = data.copy()
             ctx['action_type'] = ActionTypeEnum.DDL
             response: Optional[TextResponse] = executeDialogAction(ctx)
             if response:
                 definition_dialog.ModalDialog(self, response.toPlainText().results, self._dbc_signals)
         except Exception as e:
             self.wrong_action.emit("Error", str(e))
+
+
+    def on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
+        pass
+    #     print(threading.currentThread().name)
+    #     index_from = deselected.indexes()[0] if len(deselected.indexes()) > 0 else None
+    #     print(f"from: {index_from.data() if index_from else ''}")
+    #     index = selected.indexes()[0]
+    #     print(f"to: {index.data()}")

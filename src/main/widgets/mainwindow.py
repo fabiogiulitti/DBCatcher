@@ -22,8 +22,8 @@ class MainWindow(QMainWindow):
         main_split = QSplitter(Qt.Orientation.Horizontal)
         main_split.addWidget(db_tree)
         main_split.addWidget(content_win)
-        main_split.setStretchFactor(0, 1)
-        main_split.setStretchFactor(1, 3)
+        main_split.setStretchFactor(0, 2)
+        main_split.setStretchFactor(1, 2)
         self.setCentralWidget(main_split)
 
         self.setMenuBar(menu_bar.DBCMenuBar(content_win))

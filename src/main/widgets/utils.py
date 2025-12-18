@@ -1,28 +1,31 @@
 from signal import Signals, signal
 from PyQt6.QtGui import QStandardItem
-from PyQt6.QtCore import pyqtSignal, QObject
+from PyQt6.QtCore import pyqtSignal, QObject, Qt
 from attrs import define
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.treepath import Node
+from main.widgets.model.tree_node import TreeNode
 
 
-def createItem(parentData: dict, text, node: Node) -> QStandardItem:
-    item = QStandardItem(text)
+def createItem(parent, text, node: Node) -> QStandardItem:
+    parent_data = parent.getUserData()
+    item = TreeNode(text, parent)
+    #item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
     
     data = {'levelTag' : node.nodeType
             ,'sessionID' : node.session
-            ,'type' : parentData['type']}
-    if ('path' in parentData):
-        data['path'] = parentData['path'] + [text]
+            ,'type' : parent_data['type']}
+    if ('path' in parent_data):
+        data['path'] = parent_data['path'] + [text]
     else:
         data['path'] = [text]
-    item.setData(data)
+    item.setUserData(data)
     if not node.leaf:
         addLoadingItem(item)
     return item
 
 def addLoadingItem(item):
-    item.appendRow(QStandardItem('(LOADING...)'))
+    item.addItem(TreeNode('(LOADING...)'))
 
 @define
 class DBCSignals(QObject):
