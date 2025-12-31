@@ -1,38 +1,106 @@
-name: Build Windows Package with Poetry and PyInstaller
+name: Build Windows Package with and PyInstaller and make a release
 
 on:
   workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Creare la release su GitHub?'
+        required: true
+        default: 'false'
+        type: boolean
 
 defaults:
   run:
     shell: bash
+
+permissions:
+  contents: write   # <-- NECESSARIO
 
 jobs:
   build-windows:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12.10'
-#        cache: 'poetry'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.10'
 
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
 
-    - name: Install project dependencies
-      run: poetry install --no-interaction
+      - name: Install project dependencies
+        run: poetry install --no-interaction
 
-    - name: Build executable with PyInstaller
-      run: |
-        poetry run pyinstaller --noconfirm --windowed --name dbcatcher --paths ./src src/main/main.py
+      - name: Build executable with PyInstaller
+        run: |
+          poetry run pyinstaller --noconfirm --windowed --name dbcatcher --paths ./src src/main/main.py
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: dbcatcher-windows-package
-        path: dist/dbcatcher/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbcatcher-windows-package
+          path: dist/dbcatcher/
+
+  create-release:
+    if: ${{ github.event.inputs.create_release == 'true' }}
+    needs: build-windows
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+            
+      - name: Get tag
+        id: get_tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0)
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          VERSION=${TAG#v}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dbcatcher-windows-package
+          path: artifact/
+
+      # Crea ZIP dell'exe senza annidare la cartella
+      - name: Create release ZIP (exe)
+        run: |
+          cd artifact
+          ZIP_NAME="../dbcatcher-${VERSION}-windows.zip"
+          zip -r "$ZIP_NAME" ./*
+          cd ..
+
+      # Crea ZIP dei sorgenti
+      - name: Create source ZIP
+        run: |
+          ZIP_SRC="dbcatcher-${VERSION}-sources.zip"
+          zip -r "$ZIP_SRC" ./*
+
+      # Crea la release su GitHub
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.TAG }}
+          name: ${{ env.TAG }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload dei file ZIP come asset
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dbcatcher-${{ env.VERSION }}-windows.zip
+            dbcatcher-${{ env.VERSION }}-sources.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
