@@ -1,8 +1,8 @@
-from ctypes import sizeof
 from threading import Thread
 from typing import Optional
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 from PyQt6.QtCore import pyqtBoundSignal, pyqtSignal, QObject
+from main.core.ActonTypeEnum import DriverTypeEnum
 from main.core.manager import executeTreeNav
 from main.core.treepath import Node
 from main.core.config.ConfigManager import retrieveConnections
@@ -83,7 +83,7 @@ class ModelManager(QObject):
         ,'connection_uri' : connection.get('connection_uri', None)
         ,'host' : connection.get('host', None)
         ,'port' : connection.get('port', None)
-        ,'type' : connection['type']})
+        ,'type' : DriverTypeEnum.fromLabel(connection['type'])})
         connection_item.appendRow(QStandardItem('(LOADING...)')) #Temporary item
 
         root_item = self._model.invisibleRootItem()

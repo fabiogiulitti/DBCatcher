@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Any
 import yaml
 
@@ -31,6 +32,8 @@ class ConfigManager:
 
     def save_config(self):
         try:
+            path = Path(self.config_file)
+            path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.config_file, 'w') as file:
                 yaml.dump(self.config, file, default_flow_style=False)
         except yaml.YAMLError as e:

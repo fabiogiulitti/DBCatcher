@@ -42,7 +42,7 @@ def addConnection(con_dict: dict) -> None:
         values.append(con_dict)
         config.set_value("connections", values)
     except Exception as e:
-        logging.error(f"invalit configuration item {values}")
+        logging.error(f"invalid configuration item {values}")
         raise e
 
 

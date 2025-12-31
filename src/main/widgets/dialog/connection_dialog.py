@@ -142,12 +142,11 @@ class ConnectionDialog(QDialog):
 
 
     def _validate_and_accept(self):
-# 1. Recupero dati grezzi per validazione
+        # raw data validation
         name = self.name_input.text().strip()
         db_type_index = self.type_combo.currentIndex()
         is_uri_mode = self.type_combo.itemData(db_type_index) # flag connectionURIEnabled
 
-        # 2. Validazione Logica
         if not name:
             return self._show_error("Please specify a connection name.")
 
