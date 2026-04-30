@@ -10,7 +10,11 @@ from main.core.driver.abstractdriver import AbstractTreeAction
 from attr import ib, s
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from textwrap import dedent
-from pyhive import hive
+from impala.dbapi import connect
+from impala.hiveserver2 import HiveServer2Connection
+import thrift.protocol.TBinaryProtocol as tbp
+
+tbp.TBinaryProtocolAccelerated._fast_decode = None
 
 @s
 class DataResponse(AbstractDataResponse):
@@ -90,7 +94,6 @@ class PSTreeActions(AbstractTreeAction):
                 result.append(cat)
 
             cursor.close()
-            print("fine metodo")
         except Exception as e:
             logging.info(f"Errore connetting to Hive-Kyuubi: {ctx} {e}")
             raise e
@@ -169,7 +172,7 @@ class PSTreeActions(AbstractTreeAction):
         cur.execute(f"describe {databaseName}.{tableName}")
 
         columns = cur.fetchall()
-        result = list(map(lambda n: f"{n[0]} {n[1]} {n[2]}", columns))
+        result = [f"{a} {b} {c}" for a,b,c in columns]
 
         return (result, id)
     
@@ -228,28 +231,30 @@ def getTableCount(dim_page, database_name, tab_name, conn):
     return num_rows, last_page
 
 
-class ConnectionStrategy(AbstractConnectionStrategy[hive.Connection]):
-    timeout = 2 #minutes
-    close = hive.Connection.close
+class ConnectionStrategy(AbstractConnectionStrategy[connect]):
+    timeout = 15 #minutes
 
     @staticmethod
     def connect(params: dict[str, str]):
         host = params['host']
 
-        port = params['port']
+        port = int(params['port'])
         logging.debug(f"Connecting to Hive... {params}")
-        connection = hive.Connection(host=host, port=port)
-        logging.debug(f"Connected to Hive... {params} {connection.sessionHandle.sessionId}")
+        connection: HiveServer2Connection = connect(host=host, port=port, auth_mechanism='PLAIN', timeout=1800)
+        logging.debug(f"Connected to Hive... {params} {connection.service}")
         return connection
 
 
     @staticmethod
-    def isConnected(conn):
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT 1")
-            cursor.fetchall()
-            return True
-        except Exception:
+    def isConnected(conn: HiveServer2Connection):
+        if conn:
+            is_connected = True
+        else:
             logging.debug("Hive connection is close")
-            return False
+            is_connected = False
+        return is_connected
+        
+    @staticmethod
+    def close(conn):
+        conn.close()
+        conn = None

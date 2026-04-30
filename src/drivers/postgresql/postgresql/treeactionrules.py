@@ -490,7 +490,7 @@ def getTableCount(dimPage, schemaName, tabName, conn):
 
 
 class ConnectionStrategy(AbstractConnectionStrategy[extensions.connection]):
-    timeout = 5 #minutes
+    timeout = 20 #minutes
     close = extensions.connection.close
     isCconnected = lambda c: c.closed == 0
 

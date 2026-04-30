@@ -2,14 +2,13 @@ from platform import node
 import subprocess
 import time
 import pytest
-import psycopg2
 from drivers.hive.hive.treeactionrules import PSTreeActions
 from main.core.treepath import ItemAction, TreePath,make_session_id, references, Node
 from unittest.mock import MagicMock, patch
 
-@patch("drivers.hive.hive.treeactionrules.hive.Connection")  # Mock della connessione a Hive
+@patch("drivers.hive.hive.treeactionrules.ConnectionProxy")  # Mock della connessione a Hive
 @patch("drivers.hive.hive.treeactionrules.make_session_id")  # Mock del generatore di session ID
-def test_retrieve_catalogs(mock_make_session_id, mock_hive_Connection):
+def test_retrieve_catalogs(mock_make_session_id, mock_ConnectionProxy):
 
     mock_make_session_id.return_value = "12345"
     mock_conn = MagicMock()
@@ -18,7 +17,7 @@ def test_retrieve_catalogs(mock_make_session_id, mock_hive_Connection):
     ctx['host'] = ""
     ctx['port'] = 0
 
-    mock_hive_Connection.return_value = mock_conn
+    mock_ConnectionProxy.return_value = mock_conn
     mock_conn.cursor.return_value = mock_cursor  
     
     mock_cursor.fetchall.return_value = [("cat_1",), ("cat_2",), ("cat_3",)]

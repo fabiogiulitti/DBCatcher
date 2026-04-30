@@ -1,7 +1,8 @@
+import datetime
 import pytest
 import pytest_docker
-from pyhive import hive
-
+from impala.hiveserver2 import HiveServer2Connection
+from impala.dbapi import connect
 from drivers.hive.hive.treeactionrules import DataResponse, PSTreeActions
 
 @pytest.fixture(scope="module")
@@ -10,22 +11,22 @@ def docker_compose_file(pytestconfig):
 
 @pytest.fixture(scope="module")
 def web_service(docker_services):
-#    host = "kyuubi.novobancotools-uat.objectway.com"
     host = "localhost"
     port = 10009
 
     def is_hive_responsive():
-        conn = None
         try:
-            if conn is None:
-                conn = hive.Connection(host=host, port=port)
-
+            conn: HiveServer2Connection = connect(host=host, port=port, auth_mechanism='PLAIN')
+            cur = conn.cursor()
+            cur.execute("SELECT 1")
+            cur.fetchall()
+            cur.close()
             conn.close()
             return True
         except Exception:
             return False
         
-    docker_services.wait_until_responsive(timeout=30.0, pause=1, check=lambda: is_hive_responsive() != False)
+    docker_services.wait_until_responsive(timeout=30.0, pause=3, check=is_hive_responsive)
     yield True
 
 
@@ -70,7 +71,7 @@ def test_web_service(web_service):
     method = tree_action.retrieveFirstRows.__wrapped__
     data: DataResponse = method(tree_action, ctx)
     
-    assert [ row[:3] for row in data._rows[:3] ] == [(1, 'AAAAAAAABAAAAAAA', '1998-01-01'), (2, 'AAAAAAAACAAAAAAA', '1998-01-01'), (3, 'AAAAAAAACAAAAAAA', '2001-01-01')]
+    assert [ row[:3] for row in data._rows[:3] ] == [(1, 'AAAAAAAABAAAAAAA', datetime.date(1998,1,1)), (2, 'AAAAAAAACAAAAAAA', datetime.date(1998,1,1)), (3, 'AAAAAAAACAAAAAAA', datetime.date(2001,1,1))]
 
     method = tree_action.retrieveTabHolding.__wrapped__
     result = method(tree_action, ctx)
