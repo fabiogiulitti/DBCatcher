@@ -18,11 +18,9 @@ pyyml = "^0.0.2"
 pyqt6 = "^6.7.0"
 attrs = "^23.2.0"
 psycopg2 = "^2.9.9"
-pytest = "^8.3.3"
 thrift = "^0.21.0"
 wheel = "^0.46.3"
 requests = "^2.32.3"
-pytest-docker = "^3.2.0"
 pyhive = "^0.7.0"
 thrift-sasl = "^0.4.3"
 keyring = "^25.6.0"
@@ -32,6 +30,11 @@ cryptography = "^46.0.3"
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^6.12.0"
 sphinx = "^8.2.3"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^9.0.3"
+pytest-docker = "^3.2.5"
 
 [build-system]
 requires = ["poetry-core"]
