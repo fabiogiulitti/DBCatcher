@@ -24,13 +24,13 @@ class QueryEdit(QTextEdit):
     def setMetaData(self, metaData: dict):
         self._metadata = metaData
 
-    def keyPressEvent(self, event):
-        if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_Return:
-            ctx = self._metadata
-            ctx['action_type'] = ActionTypeEnum.CTRL_ENTER
-            ctx['action_obj'] = ObjectTypeEnum.QUERY_EDIT
-            ctx['query'] = self.toPlainText()
-            self.dbc_signals.executeQueryRequested.emit(ctx)
+    # def keyPressEvent(self, event):
+    #     if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_Return:
+    #         ctx = self._metadata
+    #         ctx['action_type'] = ActionTypeEnum.CTRL_ENTER
+    #         ctx['action_obj'] = ObjectTypeEnum.QUERY_EDIT
+    #         ctx['query'] = self.toPlainText()
+    #         self.dbc_signals.execute_query_requested.emit(ctx)
 
-        super().keyPressEvent(event)
+    #     super().keyPressEvent(event)
 

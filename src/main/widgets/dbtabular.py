@@ -69,14 +69,14 @@ class ContentTableView(QTableView):
                     action_download = QAction("Download", self)
                     action_download.triggered.connect(lambda: self.streamBytes(fetch_info.object, column_name))
                     menu.addAction(action_download)
-        action_csv = QAction("Copy to csv", self)
+        action_csv = QAction("Copy to clipboard as csv", self)
         action_csv.triggered.connect(lambda: self.fromModelToJson(self.model()))
         menu.addAction(action_csv)
         menu.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         menu.exec(self.viewport().mapToGlobal(pos))
         menu.setFocus()
 
-    def fromModelToJson(self, model: QAbstractItemModel | None):
+    def fromModelToCsv(self, model: QAbstractItemModel | None):
         if isinstance(model, QStandardItemModel):
 
             out = io.StringIO()
@@ -84,7 +84,7 @@ class ContentTableView(QTableView):
         
             rows = model.rowCount()
             columns = model.columnCount()
-            colWidths = [max([len(model.data(model.index(row, col))) for row in range(rows)] + [len(str(model.headerData(col, Qt.Orientation.Horizontal)))]) for col in range(columns)]
+            colWidths = [max([len(str(model.data(model.index(row, col)))) for row in range(rows)] + [len(str(model.headerData(col, Qt.Orientation.Horizontal)))]) for col in range(columns)]
 
             header = [str(model.headerData(col, Qt.Orientation.Horizontal)).ljust(colWidths[col]) for col in range(columns)]
             writer.writerow(header)
@@ -94,14 +94,14 @@ class ContentTableView(QTableView):
                 for column in range(columns):
                     index = model.index(row, column)
                     item = model.data(index)
-                    rowData.append(str(item).ljust(colWidths[column]) if item else "")
+                    rowData.append(str(item).ljust(colWidths[column]) if item is not None else "")
                 writer.writerow(rowData)
-            csvStr = out.getvalue()
-            out.close()
 
             cb = QGuiApplication.clipboard()
             assert cb
-            cb.setText(csvStr)
+            cb.setText(out.getvalue())
+
+            out.close()
 
     def streamBytes(self, fetch_info: abstractbigcolumn.AbstractBigColumnFetchInfo, file_name):
         print(fetch_info.type)
