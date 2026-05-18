@@ -21,7 +21,7 @@ class ContenTextEdit(QTextEdit):
 
 
     def refreshText(self, text):
-        if self.isVisible == False:
+        if self.isVisible() == False:
             self.setVisible(True)
         self.setText(text)
 

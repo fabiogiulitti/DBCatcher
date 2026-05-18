@@ -61,7 +61,7 @@ class DriverTypeEnum(Enum):
         return self._selected_view
 
     @selectedView.setter
-    def setSelectedView(self, view: ViewTypeEnum):
+    def selectedView(self, view: ViewTypeEnum):
         self._selected_view = view
 
     @property

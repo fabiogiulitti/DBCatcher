@@ -2,7 +2,7 @@ from typing import Optional, Dict, Any
 
 from PyQt6.QtWidgets import (
     QDialog, QLineEdit, QComboBox, QDialogButtonBox,
-    QVBoxLayout, QFormLayout, QWidget, QGroupBox, QLabel, QListView
+    QVBoxLayout, QFormLayout, QWidget, QGroupBox
 )
 from PyQt6.QtCore import pyqtSignal
 
@@ -13,6 +13,7 @@ from main.widgets.utils import DBCSignals
 
 
 class ConnectionDialog(QDialog):
+    DEFAULT_INDEX = 1
     """
     Dialog window for managing connections
     """
@@ -45,7 +46,7 @@ class ConnectionDialog(QDialog):
         
         for driver in DriverTypeEnum: self.type_combo.addItem(driver.label, driver.connectionURIEnabled)
 
-        general_layout.addRow("Connction name:", self.name_input)
+        general_layout.addRow("Connection name:", self.name_input)
         general_layout.addRow("Database type:", self.type_combo)
         main_layout.addWidget(general_group)
 
@@ -56,7 +57,7 @@ class ConnectionDialog(QDialog):
         self.connection_uri_input.setPlaceholderText("es: postgresql://<user>:<pass>@<host>:<port>/<dbname>")
         uri_layout.addRow("Connection uri", self.connection_uri_input)
         
-        self.host_port_group = QGroupBox("Credential details")
+        self.host_port_group = QGroupBox("Connection details")
         host_port_layout = QFormLayout(self.host_port_group)
         
         self.host_input = QLineEdit()
@@ -104,7 +105,7 @@ class ConnectionDialog(QDialog):
                 password = crypto_manager.decrypt(conn.password)
                 self.password_input.setText(password)
         else:
-            self.on_index_changed(1)
+            self.on_index_changed(self.DEFAULT_INDEX)
 
             
     def _connectSignals(self):
@@ -180,8 +181,7 @@ class ConnectionDialog(QDialog):
             self.accept()
             
         except Exception as e:
-            self.status_input.setText(f"Errore: {e}")
-            raise e
+            self.status_input.setText(f"Error: {e}")
             
 
 

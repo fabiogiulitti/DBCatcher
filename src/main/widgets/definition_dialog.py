@@ -1,9 +1,8 @@
 from typing import Optional
 from PyQt6.QtWidgets import (
-    QApplication, QDialog, QVBoxLayout, QTextEdit, QMainWindow, QPushButton, QHBoxLayout
+    QApplication, QDialog, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout
 )
 from PyQt6 import QtGui
-import sys
 
 from main.widgets.utils import DBCSignals
 
@@ -12,12 +11,12 @@ class ModalDialog(QDialog):
     def __init__(self, parent, ddl_text: str, dbc_signals: DBCSignals):
         super().__init__(parent)
         self.setWindowTitle("Definition detail")
-#        self.resize(600, 400)
+        self.resize(600, 400)
 
         layout = QVBoxLayout()
         self._text_edit = QTextEdit()
         self._text_edit.setPlainText(ddl_text)
-#        self._text_edit.setReadOnly(True)
+        self._text_edit.setReadOnly(True)
         self._text_edit.setFont(QtGui.QFont("Courier New", 10))
         layout.addWidget(self._text_edit)
 
@@ -32,9 +31,7 @@ class ModalDialog(QDialog):
         button_layout.addWidget(button_close)
         layout.addLayout(button_layout)
         self.setLayout(layout)
-        self.show()
         self.open()
-#        self.setVisible(False)
 
         dbc_signals.show_detail.connect(self._showDetail)
 
