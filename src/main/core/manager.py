@@ -9,6 +9,7 @@ from drivers.mongodb import MongoDriver
 from main.core.treepath import drivers
 from main.core.ActonTypeEnum import DriverTypeEnum, ObjectTypeEnum
 from drivers.postgresql import PostgreSQLDriver
+from drivers.oracle import OracleDriver
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +19,8 @@ inst = MongoDriver()
 drivers[DriverTypeEnum.MONGODB.name] = inst
 hvd = HiveSQLDriver()
 drivers[DriverTypeEnum.HIVE.name] = hvd
+ord_ = OracleDriver()
+drivers[DriverTypeEnum.ORACLE.name] = ord_
 
 def executeTreeNav(ctx: dict):
     driver: AbstractDbDriver = drivers[ctx['type'].name]

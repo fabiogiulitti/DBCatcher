@@ -7,6 +7,7 @@ The main goal of the project is to provide a usable alternative to existing data
 Currently supported databases are:
 - **PostgreSQL**
 - **MongoDB**
+- **Oracle**
 - **Apache Hive via Apache Kyuubi** (basic support)
 
 ---
