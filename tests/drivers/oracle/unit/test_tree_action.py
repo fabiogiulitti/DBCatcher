@@ -78,7 +78,7 @@ def test_retrieve_schema_holding_returns_static_list():
     method = tree_action.retrieveSchemaHolding.__wrapped__  # type: ignore[attr-defined]
     result = method(tree_action, {"sessionID": "sid"})
     assert result == (
-        ["tables", "views", "materialized views", "procedures", "sequences"],
+        ["tables", "views", "materialized views", "procedures", "packages", "sequences"],
         "sid",
     )
 
@@ -136,6 +136,85 @@ def test_retrieve_procedures_includes_object_type_label():
     result = method(tree_action, ctx)
 
     assert result == (["DO_STUFF (PROCEDURE)", "CALC (FUNCTION)"], sid)
+
+
+def test_retrieve_packages_lists_package_names():
+    sid = "sid-pkg"
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.fetchall.return_value = [("PKG_UTIL",), ("PKG_BUSINESS",)]
+    references[sid] = {"client": mock_conn}
+
+    ctx = {"sessionID": sid, "path": ["TESTUSER", "packages"]}
+    tree_action = ORTreeActions()
+    method = tree_action.retrievePackages.__wrapped__  # type: ignore[attr-defined]
+    result = method(tree_action, ctx)
+
+    assert result == (["PKG_UTIL", "PKG_BUSINESS"], sid)
+    query = mock_cursor.execute.call_args[0][0]
+    assert "all_objects" in query
+    assert "'PACKAGE'" in query
+    assert mock_cursor.execute.call_args.kwargs == {"owner": "TESTUSER"}
+
+
+def test_retrieve_package_ddl_concatenates_spec_and_body():
+    sid = "sid-pkg-ddl"
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    spec_clob = MagicMock()
+    spec_clob.read.return_value = "  CREATE PACKAGE PKG_UTIL AS ... END;  "
+    body_clob = MagicMock()
+    body_clob.read.return_value = "  CREATE PACKAGE BODY PKG_UTIL AS ... END;  "
+    mock_cursor.fetchone.side_effect = [(spec_clob,), (body_clob,)]
+    references[sid] = {"client": mock_conn}
+
+    ctx = {
+        "sessionID": sid,
+        "path": ["TESTUSER", "packages", "PKG_UTIL"],
+    }
+    tree_action = ORTreeActions()
+    method = tree_action.retrievePackageDDL.__wrapped__  # type: ignore[attr-defined]
+    response = method(tree_action, ctx)
+
+    text = response.toPlainText().results
+    assert "CREATE PACKAGE PKG_UTIL" in text
+    assert "CREATE PACKAGE BODY PKG_UTIL" in text
+    # The two calls should bind PACKAGE then PACKAGE_BODY.
+    bound_types = [call.kwargs["otype"] for call in mock_cursor.execute.call_args_list]
+    assert bound_types == ["PACKAGE", "PACKAGE_BODY"]
+
+
+def test_retrieve_package_ddl_tolerates_missing_body():
+    sid = "sid-pkg-no-body"
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    spec_clob = MagicMock()
+    spec_clob.read.return_value = "CREATE PACKAGE PKG_SPEC_ONLY AS ... END;"
+
+    import oracledb
+
+    def execute_side_effect(_query, otype, oname, owner):
+        if otype == "PACKAGE_BODY":
+            raise oracledb.DatabaseError("ORA-31603: PACKAGE_BODY not found")
+
+    mock_cursor.execute.side_effect = execute_side_effect
+    mock_cursor.fetchone.return_value = (spec_clob,)
+    references[sid] = {"client": mock_conn}
+
+    ctx = {
+        "sessionID": sid,
+        "path": ["TESTUSER", "packages", "PKG_SPEC_ONLY"],
+    }
+    tree_action = ORTreeActions()
+    method = tree_action.retrievePackageDDL.__wrapped__  # type: ignore[attr-defined]
+    response = method(tree_action, ctx)
+
+    text = response.toPlainText().results
+    assert "CREATE PACKAGE PKG_SPEC_ONLY" in text
+    assert "PACKAGE BODY" not in text
 
 
 def test_retrieve_columns_formats_column_metadata():

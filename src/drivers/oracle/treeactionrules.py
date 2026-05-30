@@ -120,7 +120,7 @@ class ORTreeActions(AbstractTreeAction):
     @TreePath(node_type_in='schemas', node_type_out='schema_obj_hold')
     def retrieveSchemaHolding(self, ctx: dict):
         return (
-            ['tables', 'views', 'materialized views', 'procedures', 'sequences'],
+            ['tables', 'views', 'materialized views', 'procedures', 'packages', 'sequences'],
             ctx['sessionID'],
         )
 
@@ -162,7 +162,7 @@ class ORTreeActions(AbstractTreeAction):
                 SELECT object_name, object_type
                 FROM all_procedures
                 WHERE owner = :owner
-                  AND object_type IN ('PROCEDURE', 'FUNCTION', 'PACKAGE')
+                  AND object_type IN ('PROCEDURE', 'FUNCTION')
                   AND procedure_name IS NULL
                 ORDER BY object_name
             """, owner=schema)
@@ -171,6 +171,16 @@ class ORTreeActions(AbstractTreeAction):
             return ([f"{name} ({obj_type})" for name, obj_type in rows], id)
         finally:
             cur.close()
+
+    @TreePath(node_type_in='schema_obj_hold', node_type_out='packages', holder_type='packages')
+    def retrievePackages(self, ctx: dict):
+        return self._listObjects(ctx, """
+            SELECT object_name
+            FROM all_objects
+            WHERE owner = :owner
+              AND object_type = 'PACKAGE'
+            ORDER BY object_name
+        """)
 
     @TreePath(node_type_in='schema_obj_hold', node_type_out='sequences', holder_type='sequences')
     def retrieveSequences(self, ctx: dict):
@@ -272,6 +282,37 @@ class ORTreeActions(AbstractTreeAction):
         ctx_copy['path'][-1] = name
         return self._retrieveDDL(ctx_copy, obj_type)
 
+    @ItemAction(node_type_in='packages', action_type=ActionTypeEnum.DDL)
+    def retrievePackageDDL(self, ctx: dict):
+        session_id = ctx['sessionID']
+        schema_name = ctx['path'][-3]
+        package_name = ctx['path'][-1]
+        conn = references[session_id]['client']
+        query = "SELECT DBMS_METADATA.GET_DDL(:otype, :oname, :owner) FROM dual"
+        parts: list[str] = []
+        cur = conn.cursor()
+        try:
+            for otype in ('PACKAGE', 'PACKAGE_BODY'):
+                try:
+                    cur.execute(query, otype=otype, oname=package_name, owner=schema_name)
+                    row = cur.fetchone()
+                except oracledb.DatabaseError as e:
+                    # PACKAGE_BODY potrebbe non esistere: ORA-31603 / ORA-04043
+                    log.info(f"No {otype} for {schema_name}.{package_name}: {e}")
+                    continue
+                if row is None or row[0] is None:
+                    continue
+                ddl_value = row[0]
+                text = ddl_value.read() if hasattr(ddl_value, 'read') else str(ddl_value)
+                parts.append(text.strip())
+            if not parts:
+                ddl = f"-- DDL non available per {schema_name}.{package_name}"
+            else:
+                ddl = "\n\n".join(parts)
+            return TextResponse(ddl, query, ctx)
+        finally:
+            cur.close()
+
     def _retrieveDDL(self, ctx: dict, object_type: str):
         id = ctx['sessionID']
         schema_name = ctx['path'][-3]
@@ -337,7 +378,6 @@ def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
 def getTableCount(dim_page, schema_name, tab_name, conn):
     cur = conn.cursor()
     query = f"SELECT COUNT(*) FROM {_q(schema_name)}.{_q(tab_name)}"
-    print(query)
     cur.execute(query)
     num_rows = cur.fetchone()[0]
     last_page = math.ceil(num_rows / dim_page - 1) if num_rows else 0

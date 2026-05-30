@@ -57,7 +57,7 @@ def test_oracle_tree_navigation(oracle_service):
     method = tree_action.retrieveSchemaHolding.__wrapped__  # type: ignore[attr-defined]
     holdings, _ = method(tree_action, ctx)
     assert holdings == [
-        "tables", "views", "materialized views", "procedures", "sequences",
+        "tables", "views", "materialized views", "procedures", "packages", "sequences",
     ]
 
     # tables
@@ -161,6 +161,8 @@ def test_oracle_tree_navigation(oracle_service):
     proc_label = next((p for p in procs if p.startswith("COPY_CHARACTERS")), None)
     assert proc_label is not None
     assert proc_label.endswith("(PROCEDURE)")
+    # Packages must NOT appear among procedures any more.
+    assert not any("PKG_CHARACTERS" in p for p in procs)
 
     # Procedure DDL
     ctx["path"].append(proc_label)
@@ -169,3 +171,29 @@ def test_oracle_tree_navigation(oracle_service):
     proc_ddl = text_response.toPlainText().results.upper()
     assert "COPY_CHARACTERS" in proc_ddl
     assert "PROCEDURE" in proc_ddl
+
+    # packages
+    del ctx["path"][-2:]  # remove 'procedures' and proc_label
+    ctx["path"].append("packages")
+    method = tree_action.retrievePackages.__wrapped__  # type: ignore[attr-defined]
+    packages, _ = method(tree_action, ctx)
+    assert "PKG_CHARACTERS" in packages
+    assert "PKG_SPEC_ONLY" in packages
+
+    # Package DDL: spec + body
+    ctx["path"].append("PKG_CHARACTERS")
+    method = tree_action.retrievePackageDDL.__wrapped__  # type: ignore[attr-defined]
+    text_response = method(tree_action, ctx)
+    pkg_ddl = text_response.toPlainText().results.upper()
+    assert "PACKAGE" in pkg_ddl
+    assert "PKG_CHARACTERS" in pkg_ddl
+    assert "PACKAGE BODY" in pkg_ddl
+    assert "COUNT_BY_UNIVERSE" in pkg_ddl
+    assert "RENAME_UNIVERSE" in pkg_ddl
+
+    # Package DDL: spec-only (no body) must not raise.
+    ctx["path"][-1] = "PKG_SPEC_ONLY"
+    text_response = method(tree_action, ctx)
+    spec_only_ddl = text_response.toPlainText().results.upper()
+    assert "PKG_SPEC_ONLY" in spec_only_ddl
+    assert "PACKAGE BODY" not in spec_only_ddl

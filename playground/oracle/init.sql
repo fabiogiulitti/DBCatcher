@@ -50,4 +50,30 @@ BEGIN
 END;
 /
 
+CREATE OR REPLACE PACKAGE pkg_characters AS
+    FUNCTION count_by_universe(p_universe IN VARCHAR2) RETURN NUMBER;
+    PROCEDURE rename_universe(p_old IN VARCHAR2, p_new IN VARCHAR2);
+END pkg_characters;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_characters AS
+    FUNCTION count_by_universe(p_universe IN VARCHAR2) RETURN NUMBER IS
+        v_count NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_count FROM characters WHERE universe = p_universe;
+        RETURN v_count;
+    END count_by_universe;
+
+    PROCEDURE rename_universe(p_old IN VARCHAR2, p_new IN VARCHAR2) IS
+    BEGIN
+        UPDATE characters SET universe = p_new WHERE universe = p_old;
+    END rename_universe;
+END pkg_characters;
+/
+
+CREATE OR REPLACE PACKAGE pkg_spec_only AS
+    FUNCTION get_version RETURN VARCHAR2;
+END pkg_spec_only;
+/
+
 COMMIT;
