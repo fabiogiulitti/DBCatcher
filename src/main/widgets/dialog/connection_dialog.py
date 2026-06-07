@@ -78,7 +78,6 @@ class ConnectionDialog(QDialog):
         self.status_input = QLineEdit()
         self.status_input.setReadOnly(True)
         self.status_input.setVisible(False)
-        self.status_input.setStyleSheet("color: red;")
         main_layout.addWidget(self.status_input)
         
         self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
@@ -193,10 +192,18 @@ class ConnectionDialog(QDialog):
 
     def _show_error(self, message: str):
         self.status_input.setText(f"⚠️ {message}")
+        self._set_error_state(True)
         self.status_input.setVisible(True)
         self.status_input.setFocus()
 
 
     def _clear_status(self):
         self.status_input.clear()
+        self._set_error_state(False)
         self.status_input.setVisible(False)
+
+    def _set_error_state(self, on: bool):
+        # Drives the QSS selector  QLineEdit[error="true"]  in style.qss.
+        self.status_input.setProperty("error", on)
+        self.status_input.style().unpolish(self.status_input)
+        self.status_input.style().polish(self.status_input)
