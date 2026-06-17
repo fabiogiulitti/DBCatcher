@@ -1,4 +1,4 @@
-import logging
+import logging as log
 import math
 from json import dumps
 from textwrap import dedent
@@ -18,7 +18,7 @@ from main.core.util.util import AbstractConnectionStrategy, ConnectionProxy
 from main.widgets.ContentData import ContentData, ContentDataModel
 
 
-log = logging.getLogger(__name__)
+#log = logging.getLogger()
 
 
 @define
@@ -40,9 +40,18 @@ class DataResponse(AbstractDataResponse):
     def toTabular(self):
         model = QStandardItemModel(len(self._rows), len(self._cols))
         model.setHorizontalHeaderLabels(self._cols)
-        for r, row in self._rows:
-            for c, value in row:
-                item = QStandardItem(str(value))
+        print("step 1")
+        for r, row in enumerate(self._rows):
+            print("step 2")
+            for c, value in enumerate(row):
+                try:
+                    if isinstance(value, (bytes, oracledb.LOB)):
+                        item = QStandardItem("[UNMAPPED]")
+                    else:
+                        item = QStandardItem(str(value))
+                except Exception as e:
+                    log.error("unmappable value {}", value)
+                    raise
                 if isinstance(value, (int, float)):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignCenter)
                 elif isinstance(value, bool):
@@ -51,7 +60,9 @@ class DataResponse(AbstractDataResponse):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignCenter)
                 item.setEditable(False)
                 item.setSelectable(True)
+                
                 model.setItem(r, c, item)
+        log.info("filled model")
         return ContentDataModel(model, self._query, self._metaData)
 
     def toTree(self):
@@ -251,6 +262,7 @@ class ORTreeActions(AbstractTreeAction):
 
     @ItemAction(node_type_in='tables', action_type=ActionTypeEnum.CLICK)
     def retrieveFirstRowsTable(self, ctx: dict):
+        log.info("retrieve table")
         return getRows(ctx)
 
     @ItemAction(node_type_in='views', action_type=ActionTypeEnum.CLICK)
@@ -358,12 +370,13 @@ def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
                 OFFSET {skip} ROWS
                 FETCH NEXT {dim_page} ROWS ONLY
         """).lstrip()
-
         cur.execute(query)
         assert cur.description
         cols = [desc[0] for desc in cur.description]
         rows = cur.fetchall()
-        query = query.replace("*", ",".join(cols), 1)
+        query = query.replace("*", ", ".join(cols), 1)
+    except Exception as e: 
+        log.error("Error in getRows {}", e)
     finally:
         cur.close()
 
@@ -376,13 +389,34 @@ def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
 
 
 def getTableCount(dim_page, schema_name, tab_name, conn):
-    cur = conn.cursor()
-    query = f"SELECT COUNT(*) FROM {_q(schema_name)}.{_q(tab_name)}"
-    cur.execute(query)
-    num_rows = cur.fetchone()[0]
-    last_page = math.ceil(num_rows / dim_page - 1) if num_rows else 0
-    cur.close()
+    try:
+        cur = conn.cursor()
+        query = f"SELECT COUNT(*) FROM {_q(schema_name)}.{_q(tab_name)}"
+        cur.execute(query)
+        num_rows = cur.fetchone()[0]
+        last_page = math.ceil(num_rows / dim_page - 1) if num_rows else 0
+    except Exception as e:
+        log.error("Error in count {}", e)
+    finally:
+        cur.close()
     return num_rows, last_page
+
+
+
+def replaceBigColumns(cursor, metadata):
+    
+    if metadata.type in (oracledb.DB_TYPE_BLOB, oracledb.DB_TYPE_CLOB):
+        def dimensionReplaceConverter(value):
+            return f"[{str(metadata.type.name)}({value.size()} bytes)]"
+            
+        return cursor.var(metadata.type, arraysize=cursor.arraysize, outconverter=dimensionReplaceConverter)
+    elif metadata.type in (oracledb.DB_TYPE_CLOB, 
+                         oracledb.DB_TYPE_LONG_RAW):
+        
+        def dimensionReplaceConverter(value):
+            return f"[{str(metadata.type.name)}({len(value)} bytes)]"
+            
+        return cursor.var(metadata.type, arraysize=cursor.arraysize, outconverter=dimensionReplaceConverter)
 
 
 class ConnectionStrategy(AbstractConnectionStrategy[oracledb.Connection]):
@@ -407,11 +441,13 @@ class ConnectionStrategy(AbstractConnectionStrategy[oracledb.Connection]):
             )
         dsn = f"{host}:{port}/{service}"
         log.debug(f"Connecting to Oracle dsn={dsn} user={parsed.username}")
-        return oracledb.connect(
+        connection = oracledb.connect(
             user=parsed.username,
             password=parsed.password,
-            dsn=dsn,
+            dsn=dsn
         )
+        connection.outputtypehandler = replaceBigColumns
+        return connection
 
     @staticmethod
     def isConnected(conn: oracledb.Connection) -> bool:
