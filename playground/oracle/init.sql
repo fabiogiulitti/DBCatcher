@@ -12,13 +12,32 @@ CREATE TABLE characters (
     creator         VARCHAR2(100),
     gender          VARCHAR2(10),
     species         VARCHAR2(50),
-    alignment       VARCHAR2(20)
+    alignment       VARCHAR2(20),
+    bio             CLOB,
+    avatar          BLOB,
+    signature       LONG RAW
 );
 
-INSERT INTO characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Brett Diaz', 'DC', DATE '1953-10-17', 'Debra Jones', 'Female', 'Alien', 'Good');
-INSERT INTO characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Daniel Murphy', 'DC', DATE '1951-12-22', 'Andrew Johnson', 'Female', 'Robot', 'Good');
-INSERT INTO characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Heidi Carrillo', 'Image', DATE '1977-03-08', 'Jade Strong', 'Male', 'Animal', 'Evil');
-INSERT INTO characters (name, universe, first_appearance, creator, gender, species, alignment) VALUES ('Margaret Sloan', 'Marvel', DATE '2020-10-11', 'Carla Fox', 'Female', 'Alien', 'Evil');
+INSERT INTO characters (name, universe, first_appearance, creator, gender, species, alignment, bio, avatar, signature)
+VALUES ('Brett Diaz', 'DC', DATE '1953-10-17', 'Debra Jones', 'Female', 'Alien', 'Good',
+        'Brett Diaz hails from the Andromeda sector, a peaceful diplomat turned reluctant hero after the fall of the Crystal Republic. Her bioluminescent skin and gravity-manipulation powers were revealed during the Siege of Vega IV, where she single-handedly held back an invading fleet long enough for evacuation transports to escape. Despite her impressive abilities, she remains haunted by the colleagues she could not save and dedicates her time to refugee aid organizations across the DC multiverse.',
+        HEXTORAW('89504E470D0A1A0A0000000D49484452'),
+        HEXTORAW('25504446'));
+INSERT INTO characters (name, universe, first_appearance, creator, gender, species, alignment, bio, avatar, signature)
+VALUES ('Daniel Murphy', 'DC', DATE '1951-12-22', 'Andrew Johnson', 'Female', 'Robot', 'Good',
+        'Daniel Murphy, prototype unit X-7, achieved sentience during a routine diagnostic in 1951. Officially classified as Good after passing 47 consecutive ethics trials, X-7 still struggles with the lingering Asimov constraints encoded into its core.',
+        NULL,
+        HEXTORAW('474946383961'));
+INSERT INTO characters (name, universe, first_appearance, creator, gender, species, alignment, bio, avatar, signature)
+VALUES ('Heidi Carrillo', 'Image', DATE '1977-03-08', 'Jade Strong', 'Male', 'Animal', 'Evil',
+        'A shapeshifting feline mercenary with a grudge against the Strong family clan.',
+        HEXTORAW('FFD8FFE000104A464946'),
+        NULL);
+INSERT INTO characters (name, universe, first_appearance, creator, gender, species, alignment, bio, avatar, signature)
+VALUES ('Margaret Sloan', 'Marvel', DATE '2020-10-11', 'Carla Fox', 'Female', 'Alien', 'Evil',
+        NULL,
+        HEXTORAW('424D'),
+        HEXTORAW('504B0304'));
 
 CREATE INDEX idx_characters_universe ON characters (universe);
 

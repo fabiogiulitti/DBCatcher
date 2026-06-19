@@ -1,3 +1,4 @@
+from enum import Enum
 import logging as log
 import math
 from json import dumps
@@ -39,30 +40,41 @@ class DataResponse(AbstractDataResponse):
 
     def toTabular(self):
         model = QStandardItemModel(len(self._rows), len(self._cols))
-        model.setHorizontalHeaderLabels(self._cols)
-        print("step 1")
+        model.setHorizontalHeaderLabels([col[0] for col in self._cols])
         for r, row in enumerate(self._rows):
-            print("step 2")
             for c, value in enumerate(row):
+                col_desc = self._cols[c]
                 try:
-                    if isinstance(value, (bytes, oracledb.LOB)):
-                        item = QStandardItem("[UNMAPPED]")
+                    if col_desc[1] in (oracledb.DB_TYPE_BLOB, oracledb.DB_TYPE_CLOB) and value:
+                        item = QStandardItem(f"[{str(col_desc[1].name)} {value.size()} bytes]")
+                        item.setData(
+                            BigColumFetchInfo(FetchTypeEnum.DOWNLOAD, value),
+                            Qt.ItemDataRole.UserRole)
+                    elif col_desc[1] == oracledb.DB_TYPE_LONG_RAW and value:
+                        item = QStandardItem(f"[{str(col_desc[1].name)} {len(value)} bytes]")
+                        item.setData(
+                            BigColumFetchInfo(FetchTypeEnum.DOWNLOAD, value),
+                            Qt.ItemDataRole.UserRole)
+                    elif isinstance(value, bytes) and value:
+                        item = QStandardItem(f"[BINARY {len(value)} bytes]")
+                        item.setData(
+                            BigColumFetchInfo(FetchTypeEnum.DOWNLOAD, value),
+                            Qt.ItemDataRole.UserRole)
                     else:
-                        item = QStandardItem(str(value))
+                        item = QStandardItem(str(value) if value else "NULL")
                 except Exception as e:
-                    log.error("unmappable value {}", value)
-                    raise
-                if isinstance(value, (int, float)):
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignCenter)
-                elif isinstance(value, bool):
+                    log.warn("unmappable value %s %s", col_desc, value, exc_info=e)
+                    item = QStandardItem("[UNMAPPED]")
+                if isinstance(value, bool):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                elif isinstance(value, (int, float)):
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 else:
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignCenter)
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
                 item.setEditable(False)
                 item.setSelectable(True)
                 
                 model.setItem(r, c, item)
-        log.info("filled model")
         return ContentDataModel(model, self._query, self._metaData)
 
     def toTree(self):
@@ -372,9 +384,9 @@ def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
         """).lstrip()
         cur.execute(query)
         assert cur.description
-        cols = [desc[0] for desc in cur.description]
+        cols = [desc[0:2] for desc in cur.description]
         rows = cur.fetchall()
-        query = query.replace("*", ", ".join(cols), 1)
+        query = query.replace("*", ", ".join(c[0] for c in cols))
     except Exception as e: 
         log.error("Error in getRows {}", e)
     finally:
@@ -446,7 +458,7 @@ class ConnectionStrategy(AbstractConnectionStrategy[oracledb.Connection]):
             password=parsed.password,
             dsn=dsn
         )
-        connection.outputtypehandler = replaceBigColumns
+#        connection.outputtypehandler = replaceBigColumns
         return connection
 
     @staticmethod
@@ -462,3 +474,22 @@ class ConnectionStrategy(AbstractConnectionStrategy[oracledb.Connection]):
             conn.close()
         except Exception:
             pass
+
+
+class FetchTypeEnum(Enum):
+    DOWNLOAD = 1
+    VIEW     = 2
+
+@define
+class BigColumFetchInfo():
+    _fetch_type: FetchTypeEnum
+    _object: oracledb.LOB | bytes | None
+
+    @property
+    def fetch_type(self):
+        return self._fetch_type
+    
+    @property
+    def object(self):
+        return self._object
+    
