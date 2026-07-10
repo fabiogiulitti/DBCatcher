@@ -1,4 +1,3 @@
-from enum import Enum
 import logging as log
 import math
 from json import dumps
@@ -6,12 +5,14 @@ from textwrap import dedent
 from urllib.parse import urlparse
 
 import oracledb
+from oracledb.base_impl import DbType
 from attr import define
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 from PyQt6.QtCore import Qt
 
 from main.core.ActonTypeEnum import ActionTypeEnum
 from main.core.config import crypto_manager
+from main.core.driver.abstractbigcolumn import AbstractBigColumnFetchInfo, FetchTypeEnum
 from main.core.driver.abstractdataresponse import AbstractDataResponse, TextResponse
 from main.core.driver.abstractdriver import AbstractTreeAction
 from main.core.treepath import ItemAction, TreePath, make_session_id, references
@@ -48,17 +49,17 @@ class DataResponse(AbstractDataResponse):
                     if col_desc[1] in (oracledb.DB_TYPE_BLOB, oracledb.DB_TYPE_CLOB) and value:
                         item = QStandardItem(f"[{str(col_desc[1].name)} {value.size()} bytes]")
                         item.setData(
-                            BigColumFetchInfo(FetchTypeEnum.DOWNLOAD, value),
+                            BigColumLob(FetchTypeEnum.DOWNLOAD, col_desc[1] , value),
                             Qt.ItemDataRole.UserRole)
                     elif col_desc[1] == oracledb.DB_TYPE_LONG_RAW and value:
                         item = QStandardItem(f"[{str(col_desc[1].name)} {len(value)} bytes]")
                         item.setData(
-                            BigColumFetchInfo(FetchTypeEnum.DOWNLOAD, value),
+                            BigColumRaw(FetchTypeEnum.DOWNLOAD, oracledb.DB_TYPE_LONG_RAW, value),
                             Qt.ItemDataRole.UserRole)
                     elif isinstance(value, bytes) and value:
                         item = QStandardItem(f"[BINARY {len(value)} bytes]")
                         item.setData(
-                            BigColumFetchInfo(FetchTypeEnum.DOWNLOAD, value),
+                            BigColumRaw(FetchTypeEnum.DOWNLOAD, oracledb.DB_TYPE_RAW, value),
                             Qt.ItemDataRole.UserRole)
                     else:
                         item = QStandardItem(str(value) if value else "NULL")
@@ -475,21 +476,53 @@ class ConnectionStrategy(AbstractConnectionStrategy[oracledb.Connection]):
         except Exception:
             pass
 
-
-class FetchTypeEnum(Enum):
-    DOWNLOAD = 1
-    VIEW     = 2
-
 @define
-class BigColumFetchInfo():
+class BigColumLob(AbstractBigColumnFetchInfo):
     _fetch_type: FetchTypeEnum
-    _object: oracledb.LOB | bytes | None
+    _type: DbType
+    _object: oracledb.LOB
 
     @property
-    def fetch_type(self):
+    def fetch_type(self) -> FetchTypeEnum:
         return self._fetch_type
+
+    @property
+    def type(self) -> FetchTypeEnum:
+        return self._type
     
     @property
     def object(self):
         return self._object
+
+    @property
+    def length(self) -> int:
+        return self._object.size()
+
+    def read(self, offset: int, chunk_size: int) -> str | bytes:
+        return self._object.read(offset, chunk_size)
+
+
+@define
+class BigColumRaw(AbstractBigColumnFetchInfo):
+    _fetch_type: FetchTypeEnum
+    _type: DbType
+    _object: bytes
+
+    @property
+    def fetch_type(self) -> FetchTypeEnum:
+        return self._fetch_type
     
+    @property
+    def type(self) -> FetchTypeEnum:
+        return self._type
+
+    @property
+    def object(self):
+        return self._object
+
+    @property
+    def length(self) -> int:
+        return len(self._object)
+
+    def read(self, offset: int, chunk_size: int) -> str | bytes:
+        return self._object

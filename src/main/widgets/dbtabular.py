@@ -6,6 +6,7 @@ from PyQt6.QtGui import QStandardItemModel, QAction, QGuiApplication
 from PyQt6.QtCore import Qt, QAbstractItemModel, QStandardPaths
 import oracledb
 from drivers.oracle.treeactionrules import FetchTypeEnum
+from main.core.driver import abstractbigcolumn
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.manager import executeCntAction
 from main.core.ActonTypeEnum import ActionTypeEnum, ObjectTypeEnum
@@ -24,8 +25,9 @@ class ContentTableView(QTableView):
         self.setTabletTracking(True)
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.customContextMenuRequested.connect(self.showContextMenu)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.showContextMenu)
+        
         
 
     def refreshData(self, data):
@@ -55,12 +57,13 @@ class ContentTableView(QTableView):
 
     def showContextMenu(self, pos):
         menu = QMenu(self)
-        index = self.indexAt(pos)
-        if index.isValid() and index.model():
-            
+        widget_pos = self.viewport().mapFromParent(pos)
+        index = self.indexAt(widget_pos)
+        if index.isValid():# and index.model():
             fetch_info = index.data(Qt.ItemDataRole.UserRole)
+            
             if fetch_info:
-                if FetchTypeEnum.DOWNLOAD == fetch_info._fetch_type:
+                if FetchTypeEnum.DOWNLOAD == fetch_info.fetch_type:
                     column_name = index.model().headerData(index.column(), Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole)
                     
                     action_download = QAction("Download", self)
@@ -70,7 +73,7 @@ class ContentTableView(QTableView):
         action_csv.triggered.connect(lambda: self.fromModelToJson(self.model()))
         menu.addAction(action_csv)
         menu.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        menu.exec(self.mapToGlobal(pos))
+        menu.exec(self.viewport().mapToGlobal(pos))
         menu.setFocus()
 
     def fromModelToJson(self, model: QAbstractItemModel | None):
@@ -100,7 +103,8 @@ class ContentTableView(QTableView):
             assert cb
             cb.setText(csvStr)
 
-    def streamBytes(self, object: oracledb.LOB, file_name):
+    def streamBytes(self, fetch_info: abstractbigcolumn.AbstractBigColumnFetchInfo, file_name):
+        print(fetch_info.type)
         try:
             download_folder =  QStandardPaths.writableLocation(
                 QStandardPaths.StandardLocation.DownloadLocation
@@ -113,18 +117,24 @@ class ContentTableView(QTableView):
 
             full_path = os.path.join(download_folder, file_name)
         
-            nome, estensione = os.path.splitext(file_name)
+            name, estension = os.path.splitext(file_name)
             counter = 1
             while os.path.exists(full_path):
-                full_path = os.path.join(download_folder, f"{nome}({counter}){estensione}")
+                full_path = os.path.join(download_folder, f"{name} ({counter}){estension}")
                 counter += 1
 
-            file_content = object.read()
+            offset = 1
+            chunk_size = 1000
+            file_content = fetch_info.read(offset, chunk_size)
+            offset += chunk_size
         
             write_mode = 'wb' if isinstance(file_content, bytes) else 'w'
             
             with open(full_path, write_mode) as file_locale:
-                file_locale.write(file_content)
-            
+                
+                while(file_content is not  None and len(file_content) > 0):
+                    file_locale.write(file_content)
+                    offset += chunk_size
+                    file_content = fetch_info.read(offset, chunk_size)
         except Exception as e:
-            logging.error("Impossible to download the file")
+            logging.error("Impossible to download the file", e)
