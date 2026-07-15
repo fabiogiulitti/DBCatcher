@@ -35,7 +35,8 @@ class DataResponse(AbstractDataResponse):
         return self._rows
 
     def toJson(self):
-        result = [dict(zip(self._cols, row)) for row in self._rows]
+        col_names = [c[0] for c in self._cols]
+        result = [dict(zip(col_names, row)) for row in self._rows]
         text = dumps(result, default=str, indent=4)
         return ContentData(text, self._query, self._metaData)
 

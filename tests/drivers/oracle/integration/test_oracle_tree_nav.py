@@ -71,7 +71,7 @@ def test_oracle_tree_navigation(oracle_service):
     ctx["path"].append("CHARACTERS")
     method = tree_action.retrieveFirstRowsTable.__wrapped__  # type: ignore[attr-defined]
     response: DataResponse = method(tree_action, ctx)
-    cols_lower = [c.lower() for c in response._cols]  # type: ignore[attr-defined]
+    cols_lower = [c[0].lower() for c in response._cols]  # type: ignore[attr-defined]
     assert "name" in cols_lower
     assert "universe" in cols_lower
     assert len(response.rows) >= 4
@@ -135,7 +135,7 @@ def test_oracle_tree_navigation(oracle_service):
     method = tree_action.retrieveFirstRowsMatView.__wrapped__  # type: ignore[attr-defined]
     response = method(tree_action, ctx)
     assert len(response.rows) >= 4
-    mv_universes = {row[[c.lower() for c in response._cols].index("universe")]  # type: ignore[attr-defined]
+    mv_universes = {row[[c[0].lower() for c in response._cols].index("universe")]  # type: ignore[attr-defined]
                     for row in response.rows}
     assert {"DC", "Image", "Marvel"}.issubset(mv_universes)
 
