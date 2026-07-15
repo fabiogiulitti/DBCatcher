@@ -39,7 +39,7 @@ Kyuubi acts as a SQL gateway on top of Spark / Hive, exposing a JDBC endpoint th
 ## 📦 Requirements
 
 - Python ≥ 3.8
-- Poetry
+- [uv](https://docs.astral.sh/uv/)
 - Docker & Docker Compose (for the playground, development only)
 
 > No local DBMS installation is required to **try or develop** DBCatcher, thanks to the provided playground.
@@ -53,17 +53,17 @@ Kyuubi acts as a SQL gateway on top of Spark / Hive, exposing a JDBC endpoint th
 ```bash
 git clone https://github.com/fabiogiulitti/DBCatcher.git
 cd DBCatcher
-poetry install
+uv sync --all-groups
 ```
 
-Poetry is used for dependency management and virtual environment handling.
+uv is used for dependency management and virtual environment handling.
 
 ---
 
 ## ▶️ Running the Application
 
 ```bash
-poetry run python -m main.main
+uv run python -m main.main
 ```
 
 ### Using a custom configuration file
@@ -71,7 +71,7 @@ poetry run python -m main.main
 DBCatcher supports a custom configuration file via the `-c` parameter:
 
 ```bash
-poetry run python -m main.main -c path/to/config.yaml
+uv run python -m main.main -c path/to/config.yaml
 ```
 
 ---
@@ -95,7 +95,7 @@ docker compose -f playground/<dbtype>/compose.yml up -d
 Once started, you can launch DBCatcher using the dedicated playground configuration file:
 
 ```bash
-poetry run python -m main.main -c playground/config/config.yaml
+uv run python -m main.main -c playground/config/config.yaml
 ```
 
 > ⚠️ **Important**: The playground is **not included in release artifacts** and is intended **only for development**.

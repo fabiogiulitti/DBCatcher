@@ -1,46 +1,68 @@
-[tool.poetry]
+[project]
 name = "DBCatcher"
 version = "0.1.0"
 description = ""
-authors = ["Fabio <fabio@stsk.it>"]
-license = "GPL3"
+authors = [{ name = "Fabio", email = "fabio@stsk.it" }]
+requires-python = "==3.12.10"
 readme = "README.md"
-packages = [
-    { include = "main", from = "src" },
-    { include = "drivers/hive", from = "src" },
-	   { include = "drivers/mongodb", from = "src" },
-	   { include = "drivers/postgresql", from = "src" },
-	   { include = "drivers/oracle", from = "src" },
+license = "GPL-3.0-or-later"
+dependencies = [
+    "pymongo==3.12",
+    "pyyml>=0.0.2,<0.0.3",
+    "pyqt6>=6.7.0,<7",
+    "attrs>=23.2.0,<24",
+    "psycopg2>=2.9.9,<3",
+    "thrift==0.16.0",
+    "wheel>=0.46.3,<0.47",
+    "requests>=2.32.3,<3",
+    "keyring>=25.6.0,<26",
+    "cryptography>=46.0.3,<47",
+    "impyla>=0.22.0,<0.23",
+    "thrift-sasl>=0.4.3,<0.5",
+    "oracledb>=4.0.0,<5",
 ]
-[tool.poetry.dependencies]
-python = "3.12.10"
-pymongo = "3.12"
-pyyml = "^0.0.2"
-pyqt6 = "^6.7.0"
-attrs = "^23.2.0"
-psycopg2 = "^2.9.9"
-thrift = "0.16.0"
-wheel = "^0.46.3"
-requests = "^2.32.3"
-keyring = "^25.6.0"
-cryptography = "^46.0.3"
-impyla = "^0.22.0"
-thrift-sasl = "^0.4.3"
-oracledb = "^4.0.0"
 
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.12.0,<7",
+    "sphinx>=8.2.3,<9",
+]
+test = [
+    "pytest>=9.0.3,<10",
+    "pytest-docker>=3.2.5,<4",
+]
 
-[tool.poetry.group.dev.dependencies]
-pyinstaller = "^6.12.0"
-sphinx = "^8.2.3"
+[tool.uv]
+default-groups = "all"
 
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/main",
+    "src/drivers/hive",
+    "src/drivers/mongodb",
+    "src/drivers/postgresql",
+    "src/drivers/oracle",
+]
 
-[tool.poetry.group.test.dependencies]
-pytest = "^9.0.3"
-pytest-docker = "^3.2.5"
+[tool.hatch.build.targets.wheel]
+include = [
+    "src/main",
+    "src/drivers/hive",
+    "src/drivers/mongodb",
+    "src/drivers/postgresql",
+    "src/drivers/oracle",
+]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/main" = "main"
+"src/drivers/hive" = "drivers/hive"
+"src/drivers/mongodb" = "drivers/mongodb"
+"src/drivers/postgresql" = "drivers/postgresql"
+"src/drivers/oracle" = "drivers/oracle"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 pythonpath = [

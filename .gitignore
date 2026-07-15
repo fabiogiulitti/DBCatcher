@@ -6,5 +6,7 @@ share/
 .vscode/
 src/config/config.yaml
 pyvenv.cfg
-poetry.lock
 **.log
+.venv/
+dist/
+pyproject.poetry.toml.bak
