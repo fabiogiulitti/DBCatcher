@@ -5,7 +5,6 @@ class DBCStatusBar(QStatusBar):
 
     def __init__(self, parent: QWidget, signals: DBCSignals) -> None:
         super().__init__(parent)
-        self.setAccessibleDescription("barra di stato")
         self.setSizeGripEnabled(False)
         self.lbl_context = QLabel(self)
         self.addWidget(self.lbl_context)

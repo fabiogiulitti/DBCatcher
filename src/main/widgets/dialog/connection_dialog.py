@@ -180,7 +180,7 @@ class ConnectionDialog(QDialog):
             self.accept()
             
         except Exception as e:
-            self.status_input.setText(f"Error: {e}")
+            self._show_error(str(e))
             
 
 

@@ -1,17 +1,26 @@
 from PyQt6.QtWidgets import QMenu, QMenuBar
-from PyQt6.QtGui import QAction, QActionGroup
+from PyQt6.QtGui import QAction, QActionGroup, QKeySequence
 
 from main.widgets import content_window
+from main.widgets.dbtree import DbTreeView
 from main.widgets.model import viewtypeenum
 from main.widgets.model.viewtypeenum import ViewTypeEnum
 
 class DBCMenuBar(QMenuBar):
-    def __init__(self, content_win: content_window.ContentWindow):
+    def __init__(self, content_win: content_window.ContentWindow, db_tree: DbTreeView):
         super().__init__()
 
         self._content_win = content_win
+        self._db_tree = db_tree
 
-        self.view_menu = self.addMenu("View")
+        self.file_menu = self.addMenu("&File")
+        assert self.file_menu
+        self.new_connection_action = QAction("&New connection...", self)
+        self.new_connection_action.setShortcut(QKeySequence("Ctrl+N"))
+        self.new_connection_action.triggered.connect(lambda: self._db_tree.showConnectionsDialog())
+        self.file_menu.addAction(self.new_connection_action)
+
+        self.view_menu = self.addMenu("&View")
         assert self.view_menu
 
         self.presentation_menu = QMenu("Presentation Mode", self)
