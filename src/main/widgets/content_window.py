@@ -1,6 +1,6 @@
 from threading import Thread
 from typing import Optional
-from PyQt6.QtWidgets import QSizePolicy, QStackedLayout, QWidget, QVBoxLayout, QSpacerItem, QLabel, QMessageBox, QHBoxLayout, QPushButton
+from PyQt6.QtWidgets import QProgressBar, QSizePolicy, QStackedLayout, QWidget, QVBoxLayout, QSpacerItem, QLabel, QMessageBox, QHBoxLayout, QPushButton
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QKeySequence
 from main.core.driver.abstractdataresponse import AbstractDataResponse
@@ -34,7 +34,15 @@ class ContentWindow(QWidget):
         self._execute_btn.setShortcut(QKeySequence("Ctrl+Return"))
         self._cancel_btn = QPushButton("Cancel Query")
         self._cancel_btn.setEnabled(False)
+        # Indeterminate progress bar shown while a query runs in background.
+        self._busy_indicator = QProgressBar()
+        self._busy_indicator.setRange(0, 0)
+        self._busy_indicator.setTextVisible(False)
+        self._busy_indicator.setFixedWidth(140)
+        self._busy_indicator.setAccessibleName("Query in progress")
+        self._busy_indicator.setVisible(False)
         query_bottom_layout = QHBoxLayout()
+        query_bottom_layout.addWidget(self._busy_indicator)
         query_bottom_layout.addStretch()
         query_bottom_layout.addWidget(self._execute_btn)
         query_bottom_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum))
@@ -110,7 +118,7 @@ class ContentWindow(QWidget):
         # Signals binding
         dbc_signals.table_loaded.connect(self.refreshContent)
         dbc_signals.results_updated.connect(self.refreshContent)
-        dbc_signals.execute_query_requested.connect(lambda ctx: Thread(target=self.executeAction, args=(ctx,)).start())
+        dbc_signals.execute_query_requested.connect(self._on_execute_query_requested)
         self._dbc_signals = dbc_signals
         self.wrong_action.connect(QMessageBox.information)
         self._execute_btn.clicked.connect(self._on_execute_query)
@@ -121,6 +129,10 @@ class ContentWindow(QWidget):
         self._last_page_btn.clicked.connect(self._on_last_page)
         self.reset_query_buttons.connect(self.resetButtonsForQuery)
         
+
+    def _on_execute_query_requested(self, ctx):
+        self._busy_indicator.setVisible(True)
+        Thread(target=self.executeAction, args=(ctx,)).start()
 
     def _on_execute_query(self):
         if self._response is not None:
@@ -146,6 +158,7 @@ class ContentWindow(QWidget):
     def resetButtonsForQuery(self):
         self._cancel_btn.setEnabled(False)
         self._execute_btn.setEnabled(True)
+        self._busy_indicator.setVisible(False)
         
 
     def _on_first_page(self):
