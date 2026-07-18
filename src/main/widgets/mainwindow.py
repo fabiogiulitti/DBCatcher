@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
         main_split.setStretchFactor(1, 7)
         self.setCentralWidget(main_split)
 
-        self.setMenuBar(menu_bar.DBCMenuBar(content_win))
+        self.setMenuBar(menu_bar.DBCMenuBar(content_win, db_tree))
 
         status_bar = DBCStatusBar(self, dbc_signals)
         self.setStatusBar(status_bar)

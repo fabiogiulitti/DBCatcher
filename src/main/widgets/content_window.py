@@ -1,7 +1,7 @@
 from threading import Thread
 from typing import Optional
-from PyQt6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QSpacerItem, QLabel, QMessageBox, QHBoxLayout, QPushButton
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QSizePolicy, QStackedLayout, QWidget, QVBoxLayout, QSpacerItem, QLabel, QMessageBox, QHBoxLayout, QPushButton
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QKeySequence
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.ActonTypeEnum import ActionTypeEnum, DriverTypeEnum, ObjectTypeEnum
@@ -80,9 +80,28 @@ class ContentWindow(QWidget):
         pagination_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum))
         self._pagination_container.setLayout(pagination_layout)
         cnt_layout.addWidget(self._pagination_container)
-        
-        self.setLayout(cnt_layout)
-        self.setVisible(False)
+
+        # The content (query editor + results) lives in a dedicated container so
+        # it can be swapped with an empty-state placeholder while no table/query
+        # has produced a result yet.
+        self._content_container = QWidget()
+        self._content_container.setLayout(cnt_layout)
+
+        self._empty_label = QLabel(
+            "No connection selected yet.\n\n"
+            "Use File → New connection (Ctrl+N), or right-click the panel "
+            "on the left, to add a database connection.\n"
+            "Then select a table to load its data here."
+        )
+        self._empty_label.setObjectName("emptyState")
+        self._empty_label.setWordWrap(True)
+        self._empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._empty_label.setAccessibleName("No data to display")
+
+        self._stack = QStackedLayout(self)
+        self._stack.addWidget(self._empty_label)
+        self._stack.addWidget(self._content_container)
+        self._stack.setCurrentWidget(self._empty_label)
 
         self._driver_type: Optional[DriverTypeEnum ] = None
         self._response: Optional[AbstractDataResponse] = None
@@ -236,8 +255,8 @@ class ContentWindow(QWidget):
                 self._content_tree.setVisible(True)
             self._content_label.setVisible(True)
             self._dbc_signals.status_notify.emit("Results:", f"{metadata['cur_page']*metadata['dim_page']+1} - {(metadata['cur_page']+1)*metadata['dim_page']} of {metadata.get('tot_result', 'UNKNOWN')}")
-    
-            self.setVisible(True)
+
+            self._stack.setCurrentWidget(self._content_container)
             self._current_page = metadata.get("cur_page", 0)
             self._last_page = metadata.get("last_page", 0)
         except Exception as e:
