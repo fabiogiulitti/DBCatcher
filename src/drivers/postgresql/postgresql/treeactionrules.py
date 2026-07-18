@@ -1,8 +1,10 @@
 import logging
 import math
+from re import S
 
 from main.core.ActonTypeEnum import ActionTypeEnum
 from main.core.config import crypto_manager
+from main.core.driver import abstractbigcolumn
 from main.core.driver.abstractdataresponse import AbstractDataResponse, TextResponse
 from main.core.treepath import ItemAction, TreePath,make_session_id, references
 from json import dumps
@@ -10,8 +12,9 @@ from main.core.util.util import AbstractConnectionStrategy, ConnectionProxy
 from main.widgets.ContentData import ContentData, ContentDataModel
 from main.core.driver.abstractdriver import AbstractTreeAction
 from psycopg2 import connect, extensions
-from attr import define
+from attr import define, s
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
+from PyQt6.QtCore import Qt
 from textwrap import dedent
 
 
@@ -39,7 +42,15 @@ class DataResponse(AbstractDataResponse):
 
         for row in range(len(self._rows)):
             for col in range(len(self._cols)):
-                item = QStandardItem(str(self._rows[row][col]))
+                field = self._rows[row][col]
+                if isinstance(field, memoryview):
+                    item = QStandardItem(f"[BYTEA {field.nbytes} bytes]")
+                    item.setData(
+                        BigColumPGAdapter(field),
+                        Qt.ItemDataRole.UserRole
+                    )
+                else:
+                    item = QStandardItem(str(field))
                 item.setEditable(False)
                 item.setSelectable(True)
                 model.setItem(row, col, item)
@@ -501,3 +512,28 @@ class ConnectionStrategy(AbstractConnectionStrategy[extensions.connection]):
         dsn = extensions.make_dsn(connection_uri, dbname = db_name)
         return connect(dsn)
 
+
+@define
+class BigColumPGAdapter(abstractbigcolumn.AbstractBigColumnFetchInfo):
+    _fetch_type = abstractbigcolumn.FetchTypeEnum.DOWNLOAD
+    _obj: memoryview
+
+    @property
+    def fetch_type(self) -> abstractbigcolumn.FetchTypeEnum:
+        return self._fetch_type
+
+    @property
+    def type(self):
+        ...
+
+    @property
+    def object(self):
+        return self._obj
+
+    @property
+    def length(self) -> int:
+        return self._obj.nbytes
+
+    def read(self, offset: int, chunk_size: int) -> bytes:
+        sliced = self._obj[offset:offset+chunk_size+1]
+        return sliced.tobytes()
