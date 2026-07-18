@@ -500,7 +500,7 @@ class BigColumLob(AbstractBigColumnFetchInfo):
         return self._object.size()
 
     def read(self, offset: int, chunk_size: int) -> str | bytes:
-        return self._object.read(offset, chunk_size)
+        return self._object.read(offset+1, chunk_size)
 
 
 @define

@@ -57,7 +57,9 @@ class ContentTableView(QTableView):
 
     def showContextMenu(self, pos):
         menu = QMenu(self)
-        widget_pos = self.viewport().mapFromParent(pos)
+        view_port = self.viewport()
+        assert view_port
+        widget_pos = view_port.mapFromParent(pos)
         index = self.indexAt(widget_pos)
         if index.isValid():# and index.model():
             fetch_info = index.data(Qt.ItemDataRole.UserRole)
@@ -67,13 +69,13 @@ class ContentTableView(QTableView):
                     column_name = index.model().headerData(index.column(), Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole)
                     
                     action_download = QAction("Download", self)
-                    action_download.triggered.connect(lambda: self.streamBytes(fetch_info.object, column_name))
+                    action_download.triggered.connect(lambda: self.streamBytes(fetch_info, column_name))
                     menu.addAction(action_download)
         action_csv = QAction("Copy to clipboard as csv", self)
-        action_csv.triggered.connect(lambda: self.fromModelToJson(self.model()))
+        action_csv.triggered.connect(lambda: self.fromModelToCsv(self.model()))
         menu.addAction(action_csv)
         menu.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        menu.exec(self.viewport().mapToGlobal(pos))
+        menu.exec(view_port.mapToGlobal(pos))
         menu.setFocus()
 
     def fromModelToCsv(self, model: QAbstractItemModel | None):
@@ -104,7 +106,6 @@ class ContentTableView(QTableView):
             out.close()
 
     def streamBytes(self, fetch_info: abstractbigcolumn.AbstractBigColumnFetchInfo, file_name):
-        print(fetch_info.type)
         try:
             download_folder =  QStandardPaths.writableLocation(
                 QStandardPaths.StandardLocation.DownloadLocation
@@ -123,11 +124,9 @@ class ContentTableView(QTableView):
                 full_path = os.path.join(download_folder, f"{name} ({counter}){estension}")
                 counter += 1
 
-            offset = 1
+            offset = 0
             chunk_size = 1000
             file_content = fetch_info.read(offset, chunk_size)
-            offset += chunk_size
-        
             write_mode = 'wb' if isinstance(file_content, bytes) else 'w'
             
             with open(full_path, write_mode) as file_locale:
@@ -137,4 +136,5 @@ class ContentTableView(QTableView):
                     offset += chunk_size
                     file_content = fetch_info.read(offset, chunk_size)
         except Exception as e:
-            logging.error("Impossible to download the file", e)
+            logging.error("Impossible to download the file %s", e)
+

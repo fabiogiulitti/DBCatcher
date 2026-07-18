@@ -5,14 +5,16 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100),
     email VARCHAR(100),
-    address JSONB
+    address JSONB,
+    avatar BYTEA  -- binary column, used to exercise BYTEA rendering in the UI
 );
 
---
-INSERT INTO users (name, email, address) VALUES ('John Doe', 'john.doe@example.com', '{"street": "123 Main St", "city": "Anytown", "zip_code": "12345"}');
-INSERT INTO users (name, email, address) VALUES ('Jane Smith', 'jane.smith@example.com', '{"street": "456 Oak Ave", "city": "Someplace", "zip_code": "67890"}');
-INSERT INTO users (name, email, address) VALUES ('Alice Johnson', 'alice.johnson@example.com', null);
-INSERT INTO users (name, email, address) VALUES ('Bob Brown', 'bob.brown@example.com', '{"street": "789 Pine Ln", "city": "Otherville", "state": "CA"}');
+-- avatar values intentionally cover tricky binary cases: a PNG magic header,
+-- a GIF header, a NULL, and raw bytes including 0x00 and 0xFF.
+INSERT INTO users (name, email, address, avatar) VALUES ('John Doe', 'john.doe@example.com', '{"street": "123 Main St", "city": "Anytown", "zip_code": "12345"}', decode('89504e470d0a1a0a', 'hex'));
+INSERT INTO users (name, email, address, avatar) VALUES ('Jane Smith', 'jane.smith@example.com', '{"street": "456 Oak Ave", "city": "Someplace", "zip_code": "67890"}', decode('47494638396101000100', 'hex'));
+INSERT INTO users (name, email, address, avatar) VALUES ('Alice Johnson', 'alice.johnson@example.com', null, null);
+INSERT INTO users (name, email, address, avatar) VALUES ('Bob Brown', 'bob.brown@example.com', '{"street": "789 Pine Ln", "city": "Otherville", "state": "CA"}', E'\\x00010203040506070809fffe'::bytea);
 
 --
 CREATE TABLE IF NOT EXISTS comics.users (
