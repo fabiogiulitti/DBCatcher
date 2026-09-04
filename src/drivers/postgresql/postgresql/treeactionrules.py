@@ -11,7 +11,7 @@ from json import dumps
 from main.core.util.util import AbstractConnectionStrategy, ConnectionProxy
 from main.widgets.ContentData import ContentData, ContentDataModel
 from main.core.driver.abstractdriver import AbstractTreeAction
-from psycopg2 import connect, extensions
+from psycopg2 import connect, extensions, sql
 from attr import define, s
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
@@ -452,7 +452,6 @@ def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
     id = ctx['sessionID']
     schema_name = ctx['path'][1]
     tab_name = ctx['path'][-1]
-    print(f"{schema_name} {tab_name}")
     conn = references[id]['client']
     try:
         skip = cur_page * dim_page
@@ -460,43 +459,55 @@ def getRows(ctx: dict, cur_page: int = 0, dim_page: int = 200):
         tot_result,last_page = getTableCount(dim_page, schema_name, tab_name, conn)
         
         cur: extensions.cursor = conn.cursor()
-        query = dedent(f"""
+        query = sql.SQL(dedent("""
                     SELECT *
-                    FROM {schema_name}.{tab_name}
-                    offset {skip}
-                    limit {dim_page}
+                    FROM {}.{}
+                    offset %s
+                    limit %s
             """).lstrip()
-        
-        cur.execute(query)
+        ).format(
+            sql.Identifier(schema_name),
+            sql.Identifier(tab_name)
+        )
+        cur.execute(query, (skip, dim_page))
         
         assert cur.description
         cols = [desc[0] for desc in cur.description]
 
         rows = cur.fetchall()
-
-        cur.close()
-        
         metadata = ctx.copy()
         metadata['cur_page'] = cur_page
         metadata['last_page'] = last_page
         metadata['dim_page'] = dim_page
         metadata['tot_result'] = tot_result
-        return DataResponse(cols, rows, query, metadata)
+        return DataResponse(cols, rows, cur.query.decode(), metadata)
     except Exception as e:
-        cur.close()
+        logging.error("Retrieving rows error %s", e)
         conn.rollback()
         raise e
+    finally:
+        cur.close()
 
 
-def getTableCount(dimPage, schemaName, tabName, conn):
-    cur = conn.cursor()
-    cur.execute(f"""
+def getTableCount(dimPage, schema_name, tab_name, conn):
+    try:
+        cur = conn.cursor()
+        query = sql.SQL("""
                 select count(*) as numRecords
-                from {schemaName}.{tabName}
-            """)
-    num_rows = cur.fetchone()[0]
-    last_page = math.ceil(num_rows / dimPage - 1)
-    cur.close()
+                from {}.{}
+            """).format(
+                sql.Identifier(schema_name),
+                sql.Identifier(tab_name)
+            )
+        cur.execute(query)
+        num_rows = cur.fetchone()[0]
+        last_page = math.ceil(num_rows / dimPage - 1)
+    except Exception as e:
+        logging.error("Fetching rows count error %s", e)
+        conn.rollback()
+        raise e
+    finally:
+        cur.close()
     return num_rows,last_page
 
 
