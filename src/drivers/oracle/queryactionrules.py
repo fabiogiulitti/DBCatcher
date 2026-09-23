@@ -36,7 +36,7 @@ def executeQuery(ctx: dict, dim_page: int = 200):
             cols = ["Affected rows"]
         else:
             rows = cur.fetchall()
-            cols = [desc[0] for desc in cur.description]
+            cols = [desc[0:2] for desc in cur.description]
         metadata = ctx.copy()
         metadata['cur_page'] = 0
         metadata['dim_page'] = dim_page
