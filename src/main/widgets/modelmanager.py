@@ -1,7 +1,7 @@
 from threading import Thread
 from typing import Optional
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
-from PyQt6.QtCore import pyqtBoundSignal, pyqtSignal, QObject
+from PyQt6.QtCore import pyqtBoundSignal, pyqtSignal, QObject, Qt
 from main.core.ActonTypeEnum import DriverTypeEnum
 from main.core.manager import executeTreeNav
 from main.core.treepath import Node
@@ -40,7 +40,7 @@ class ModelManager(QObject):
     def expandModelAsync(self, index, item):
         try:
             data = index.model().itemData(index)
-            node: Node = executeTreeNav(data[257])
+            node: Node = executeTreeNav(data[Qt.ItemDataRole.UserRole.value])
             self.node_insertion.emit(item, node)
         except Exception as e:
             self._wrong_action.emit("Error", str(e))
@@ -49,7 +49,8 @@ class ModelManager(QObject):
     def collapseModel(self, index):
         item: Optional[QStandardItem] = self._model.itemFromIndex(index)
         assert item
-        item.removeRows(0, item.rowCount() - 1)
+        item.removeRows(0, item.rowCount())
+        item.appendRow(QStandardItem('(LOADING...)')) #Temporary item
         
 
 
@@ -61,13 +62,14 @@ class ModelManager(QObject):
             uri = connection.connection_uri
             host = connection.host
             port = connection.port
-            connection_item = QStandardItem(f"{name} -> {type.name}")
+            connection_item = QStandardItem(f"{name} -> {type.label}")
             connection_item.setData({"name": name,
                 'levelTag' : 'connections'
                 ,'connection_uri' : uri
                 ,'host' : host
                 ,'port' : port
-                ,'type' : type})
+                ,'type' : type}
+                ,Qt.ItemDataRole.UserRole.value)
             connection_item.appendRow(QStandardItem('(LOADING...)')) #Temporary item
 
             connection_items.append(connection_item)
@@ -83,7 +85,8 @@ class ModelManager(QObject):
         ,'connection_uri' : connection.get('connection_uri', None)
         ,'host' : connection.get('host', None)
         ,'port' : connection.get('port', None)
-        ,'type' : DriverTypeEnum.fromLabel(connection['type'])})
+        ,'type' : DriverTypeEnum.fromLabel(connection['type'])}
+        ,Qt.ItemDataRole.UserRole.value)
         connection_item.appendRow(QStandardItem('(LOADING...)')) #Temporary item
 
         root_item = self._model.invisibleRootItem()
@@ -93,4 +96,4 @@ class ModelManager(QObject):
 
 def addNodes(parent: QStandardItem, node: Node):
         parent.removeRow(0)
-        parent.appendRows(map(lambda it: createItem(parent.data(), it, node), node.items))
+        parent.appendRows(map(lambda it: createItem(parent.data(Qt.ItemDataRole.UserRole.value), it, node), node.items))

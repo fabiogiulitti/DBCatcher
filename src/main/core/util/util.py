@@ -67,7 +67,7 @@ class ConnectionProxy():
         self.initializeTimer()
 
     def initializeTimer(self):
-        self._timer = DBCTimer(60 * 2, self.close)
+        self._timer = DBCTimer(60 * self._strategy.timeout, self.close)
         self._timer.daemon = True
         self._timer._query_in_progress = self._query_in_progress
         self._timer.start()

@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal
 from main.core.driver.abstractdataresponse import AbstractDataResponse, TextResponse
 from main.core.manager import executeDialogAction, executeTreeAction
 from main.widgets import definition_dialog
+from main.widgets import modelmanager
 from main.widgets.dialog.connection_dialog import ConnectionDialog
 from main.widgets.modelmanager import ModelManager
 from main.core.ActonTypeEnum import ActionTypeEnum
@@ -30,22 +31,17 @@ class DbTreeView(QTreeView):
         self._dbc_signals.connection_added.connect(self.modelManager.addConnection)
 
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            event = None
-        super().mousePressEvent(event)
-    
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
             index = self.currentIndex()
             model = index.model()
             assert model is not None
             data = model.itemData(index)
-            ctx = data[257].copy()
+            ctx = data[Qt.ItemDataRole.UserRole.value].copy()
             ctx['action_type'] = ActionTypeEnum.CLICK
             Thread(target=self.asynchRefresh, args=(ctx,)).start()
-
-        super().keyPressEvent(event)
+        else:
+            super().keyPressEvent(event)
 
     def asynchRefresh(self, ctx):
         try:
@@ -73,7 +69,7 @@ class DbTreeView(QTreeView):
             model = index.model()
             assert model
             data = model.itemData(index)
-            ctx = data[257]
+            ctx = data[Qt.ItemDataRole.UserRole.value]
             
             if ctx['levelTag'] == 'connections':
                 new_conn_act_def = QAction("New connection...", self)
@@ -102,7 +98,7 @@ class DbTreeView(QTreeView):
                 model = index.model()
                 assert model is not None
                 data = model.itemData(index)
-                ctx = data[257].copy()
+                ctx = data[Qt.ItemDataRole.UserRole.value].copy()
                 name = ctx['name']
                 ConnectionDialog(self, self._dbc_signals, name)
             else:
@@ -116,7 +112,7 @@ class DbTreeView(QTreeView):
             model = index.model()
             assert model is not None
             data = model.itemData(index)
-            ctx = data[257].copy()
+            ctx = data[modelmanager].copy()
             ctx['action_type'] = ActionTypeEnum.DDL
             response: Optional[TextResponse] = executeDialogAction(ctx)
             if response:

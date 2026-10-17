@@ -10,3 +10,6 @@ connections:
   type: Hive/Kyuubi
   host: localhost
   port: 10009
+- name: "Localhost"
+  type: Oracle
+  connection_uri: oracle://testuser:testpassword@localhost:1521/FREEPDB1

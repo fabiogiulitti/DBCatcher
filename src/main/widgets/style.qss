@@ -1,0 +1,260 @@
+/* DBCatcher application stylesheet.
+   Additive on top of the Fusion style set in main.py. Colors reference
+   the active QPalette so the sheet follows Windows light/dark mode. */
+
+/* ─── Layout density ──────────────────────────────────────────────── */
+
+QMainWindow,
+QDialog {
+    padding: 6px;
+}
+
+QWidget {
+    /* spacing between siblings managed via Qt layouts; this only affects
+       widgets that render their own background (containers, panels). */
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────── */
+
+QPushButton {
+    padding: 4px 14px;
+    min-height: 22px;
+    min-width: 72px;
+}
+
+QPushButton:focus {
+    outline: 2px solid palette(highlight);
+}
+
+QPushButton:default {
+    font-weight: 600;
+}
+
+QPushButton:disabled {
+    color: palette(disabled, button-text);
+}
+
+QToolButton {
+    padding: 3px 6px;
+}
+
+/* ─── Inputs ──────────────────────────────────────────────────────── */
+
+QLineEdit,
+QTextEdit,
+QPlainTextEdit,
+QComboBox,
+QSpinBox,
+QDoubleSpinBox {
+    padding: 3px 6px;
+    selection-background-color: palette(highlight);
+    selection-color: palette(highlighted-text);
+}
+
+QLineEdit:focus,
+QTextEdit:focus,
+QPlainTextEdit:focus,
+QComboBox:focus,
+QSpinBox:focus,
+QDoubleSpinBox:focus {
+    border: 1px solid palette(highlight);
+}
+
+QLineEdit:read-only {
+    background: palette(window);
+    color: palette(window-text);
+}
+
+/* Semantic error state. Toggle from Python with:
+       w.setProperty("error", True)
+       w.style().unpolish(w); w.style().polish(w)
+   Avoids hard-coded 'color: red;' that ignores dark/light theme. */
+QLineEdit[error="true"],
+QLabel[error="true"],
+QTextEdit[error="true"] {
+    color: palette(bright-text);
+    background: rgba(200, 50, 50, 0.18);
+    border: 1px solid rgba(200, 50, 50, 0.65);
+    border-radius: 2px;
+    padding: 3px 6px;
+}
+
+QLabel[role="warning"]  { color: #b58900; }
+QLabel[role="info"]     { color: palette(link); }
+QLabel[role="accent"]   { color: palette(highlight); font-weight: 600; }
+QLabel[role="hint"]     { color: palette(disabled, window-text); font-style: italic; }
+
+/* Section headers (e.g. "Query", "Result data"). Opt-in via:
+       lbl.setProperty("section", True) */
+QLabel[section="true"] {
+    font-weight: 600;
+    padding: 2px 0;
+}
+
+/* ─── Tree / Table views ──────────────────────────────────────────── */
+
+QTreeView,
+QTableView {
+    alternate-background-color: palette(alternate-base);
+    selection-background-color: palette(highlight);
+    selection-color: palette(highlighted-text);
+    gridline-color: palette(mid);
+}
+
+QTreeView::item,
+QTableView::item {
+    padding: 2px 4px;
+}
+
+QTreeView::item:selected:!active,
+QTableView::item:selected:!active {
+    background: palette(midlight);
+    color: palette(text);
+}
+
+QHeaderView::section {
+    padding: 4px 8px;
+    border: none;
+    border-right: 1px solid palette(mid);
+    border-bottom: 1px solid palette(mid);
+    background: palette(window);
+    font-weight: 600;
+}
+
+/* ─── Splitter handle (mainwindow horizontal split) ───────────────── */
+
+QSplitter::handle {
+    background: palette(mid);
+}
+QSplitter::handle:horizontal { width: 4px; }
+QSplitter::handle:vertical   { height: 4px; }
+QSplitter::handle:hover      { background: palette(highlight); }
+
+/* ─── Group boxes (connection dialog, …) ──────────────────────────── */
+
+QGroupBox {
+    margin-top: 14px;
+    padding: 10px 6px 6px 6px;
+    border: 1px solid palette(mid);
+    border-radius: 3px;
+    font-weight: 600;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 10px;
+    padding: 0 6px;
+    color: palette(window-text);
+}
+
+/* ─── Status bar ──────────────────────────────────────────────────── */
+
+QStatusBar {
+    border-top: 1px solid palette(mid);
+}
+QStatusBar::item {
+    border: none;
+}
+QStatusBar QLabel {
+    padding: 0 8px;
+}
+
+/* ─── Menu bar / menus ────────────────────────────────────────────── */
+
+QMenuBar {
+    border-bottom: 1px solid palette(mid);
+}
+QMenuBar::item {
+    padding: 4px 10px;
+    background: transparent;
+}
+QMenuBar::item:selected {
+    background: palette(highlight);
+    color: palette(highlighted-text);
+}
+
+QMenu {
+    border: 1px solid palette(mid);
+    padding: 4px 0;
+}
+QMenu::item {
+    padding: 4px 22px;
+}
+QMenu::item:selected {
+    background: palette(highlight);
+    color: palette(highlighted-text);
+}
+QMenu::separator {
+    height: 1px;
+    margin: 4px 8px;
+    background: palette(mid);
+}
+
+/* ─── Code / data viewers: monospace ──────────────────────────────────
+   Targets the SQL editor, JSON viewer and DDL viewer by subclass name.
+   Keeping the font in QSS lets the user override without touching code,
+   and lets the rule cover every instance uniformly. */
+
+QueryEdit,
+ContenTextEdit {
+    font-family: "Cascadia Mono", "Consolas", "JetBrains Mono",
+                 "DejaVu Sans Mono", "Courier New", monospace;
+    font-size: 10pt;
+}
+
+DefinitionDialog QTextEdit,
+DefinitionDialog QPlainTextEdit {
+    font-family: "Cascadia Mono", "Consolas", "JetBrains Mono",
+                 "DejaVu Sans Mono", "Courier New", monospace;
+    font-size: 10pt;
+}
+
+/* ─── Tooltips ────────────────────────────────────────────────────── */
+
+QToolTip {
+    padding: 4px 6px;
+    border: 1px solid palette(mid);
+    background: palette(window);
+    color: palette(window-text);
+    opacity: 230;
+}
+
+/* ─── Scrollbars ──────────────────────────────────────────────────── */
+
+QScrollBar:vertical {
+    width: 12px;
+    background: palette(base);
+    margin: 0;
+}
+QScrollBar:horizontal {
+    height: 12px;
+    background: palette(base);
+    margin: 0;
+}
+QScrollBar::handle {
+    background: palette(mid);
+    border-radius: 3px;
+    min-height: 24px;
+    min-width: 24px;
+}
+QScrollBar::handle:hover {
+    background: palette(dark);
+}
+QScrollBar::add-line,
+QScrollBar::sub-line {
+    width: 0;
+    height: 0;
+}
+QScrollBar::add-page,
+QScrollBar::sub-page {
+    background: none;
+}
+
+/* ─── Dialog button rows ──────────────────────────────────────────── */
+
+QDialogButtonBox {
+    button-layout: 0; /* WinLayout: OK/Cancel order, right-aligned */
+}
+QDialogButtonBox QPushButton {
+    min-width: 88px;
+}

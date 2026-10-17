@@ -11,12 +11,11 @@ from main.widgets import mainwindow
 
 class ContentTreeView(QTreeView):
 
-    def __init__(self, parent, query_txt) -> None:
+    def __init__(self, parent, query_txt, execute_query_requested: pyqtBoundSignal) -> None:
         super().__init__(parent)
         self._query_txt = query_txt
+        self._execute_query_requested = execute_query_requested
         self.show()
-
-        self.execute_query_requested: pyqtBoundSignal
         
 
     def refreshData(self, data):
@@ -31,12 +30,12 @@ class ContentTreeView(QTreeView):
                 ctx = self._metaData
                 ctx['action_type'] = ActionTypeEnum.NEXT_PAGE
                 ctx['action_obj'] = ObjectTypeEnum.TREE
-                self.execute_query_requested.emit(ctx)
+                self._execute_query_requested.emit(ctx)
             elif event.modifiers() == Qt.KeyboardModifier.ControlModifier and  event.key() == Qt.Key.Key_PageUp:
                 ctx = self._metaData
                 ctx['action_type'] = ActionTypeEnum.PREVIOUS_PAGE
                 ctx['action_obj'] = ObjectTypeEnum.TREE
-                self.execute_query_requested.emit(ctx)
+                self._execute_query_requested.emit(ctx)
         except Exception as e:
             QMessageBox.information(self, "Error", str(e))
         super().keyPressEvent(event)

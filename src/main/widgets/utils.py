@@ -1,6 +1,6 @@
 from signal import Signals, signal
 from PyQt6.QtGui import QStandardItem
-from PyQt6.QtCore import pyqtSignal, QObject
+from PyQt6.QtCore import pyqtSignal, QObject, Qt
 from attrs import define
 from main.core.driver.abstractdataresponse import AbstractDataResponse
 from main.core.treepath import Node
@@ -16,7 +16,7 @@ def createItem(parentData: dict, text, node: Node) -> QStandardItem:
         data['path'] = parentData['path'] + [text]
     else:
         data['path'] = [text]
-    item.setData(data)
+    item.setData(data,Qt.ItemDataRole.UserRole.value)
     if not node.leaf:
         addLoadingItem(item)
     return item
@@ -30,7 +30,7 @@ class DBCSignals(QObject):
     status_notify  = pyqtSignal(str, str)
     table_loaded = pyqtSignal(AbstractDataResponse)
     show_detail = pyqtSignal(str, str)
-    executeQueryRequested = pyqtSignal(dict)
+    execute_query_requested = pyqtSignal(dict)
     results_updated = pyqtSignal(AbstractDataResponse)
 
 
